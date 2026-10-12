@@ -117,7 +117,7 @@ b {{ display: inline-block; min-width: 3.2em; color: var(--ink); }}
 The notebooks I keep to refresh my own thinking and to build my own map of how data, models and inference fit together
 in geophysics, shared as an open course. Every idea on a small problem whose answer is known; every method actually
 run; every figure from that run.
-The notebooks were developed with Claude Opus 5.5 (Anthropic), an AI model that wrote much of the code, text and figures under my direction; I chose the topics, reviewed the results, and take responsibility for any errors.
+The notebooks were developed with Claude Opus 5.5 (Anthropic).
 The course will continue to evolve as my understanding of the subject grows and changes.</p>
 <p><a href="../figures/roadmap.png"><img src="../figures/roadmap.png" alt="Reading map of the course"></a></p>
 <h2>Topic 1 · Geophysical forward problems and numerical methods <span class="tag">planned</span></h2>

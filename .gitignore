@@ -1,0 +1,22 @@
+# local, private or regenerable material: not part of the public course
+.DS_Store
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+_archive*/
+Bayesian_papers/
+reviews/
+data/*.npz
+data/*.tmp*
+build/STYLE.md
+build/CURRICULUM.md
+build/REVISION_*.md
+build/renumber.py
+build/figure_name_map.tsv
+build/rebuild_all*.log
+build/rebuild_all*.done
+# CPU vs GPU material: in preparation, not yet public
+build/gpu_benchmark.py
+data/gpu_benchmark.json
+build/.rebuild_start
+build/_scratch*/

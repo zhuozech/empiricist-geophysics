@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Empiricist Geophysics</title>
+<style>
+:root { --bg: #fcfcfb; --ink: #1d1d1b; --ink2: #52514e; --muted: #8a8984; --line: #e3e2dc; --accent: #2a78d6; }
+@media (prefers-color-scheme: dark) { :root { --bg: #141413; --ink: #ecebe6; --ink2: #b9b8b2; --muted: #8a8984;
+  --line: #2c2c2a; --accent: #6aa6ee; } }
+body { background: var(--bg); color: var(--ink); font: 16px/1.55 -apple-system, "Segoe UI", Arial, sans-serif;
+  max-width: 860px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { margin-bottom: 4px; } .sub { color: var(--ink2); margin-top: 0; }
+h2 { margin-top: 36px; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+h3 { color: var(--ink2); font-size: 1rem; margin: 22px 0 6px; }
+ul { list-style: none; padding: 0; margin: 0; } li { padding: 3px 0; }
+a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+b { display: inline-block; min-width: 3.2em; color: var(--ink); }
+.tag { font-size: .7em; color: var(--muted); font-weight: normal; border: 1px solid var(--line); border-radius: 4px;
+  padding: 1px 6px; vertical-align: middle; }
+.planned { color: var(--ink2); list-style: disc; padding-left: 1.2em; } .planned li { padding: 2px 0; }
+.k { display: inline; min-width: 0; } img { max-width: 100%; height: auto; }
+</style></head><body>
+<h1>Empiricist Geophysics</h1>
+<p class="sub"><b>Data, Models, and Bayesian Inference.</b> Geophysical inverse problems, by picture and by computation.
+The notebooks I keep to refresh my own thinking and to build my own map of how data, models and inference fit together
+in geophysics, shared as an open course. Every idea on a small problem whose answer is known; every method actually
+run; every figure from that run.</p>
+<p><a href="../figures/roadmap.png"><img src="../figures/roadmap.png" alt="Reading map of the course"></a></p>
+<h2>Topic 1 · Geophysical forward problems and numerical methods <span class="tag">planned</span></h2>
+<ul class="planned"><li><b class="k">Elastic dislocation models</b>: point sources and finite faults in an elastic half-space (Okada 1985, 1992), triangular dislocations and layered Earth models; how the Green's-function matrix G of a slip inversion is built, and how its errors become the prediction covariance C<sub>p</sub> (2.13).</li><li><b class="k">Numerical methods</b>: finite-difference, finite-element and boundary-element methods; meshing a curved fault from a slab model; checking accuracy by mesh refinement.</li><li><b class="k">Earthquake cycle and postseismic processes</b>: interseismic locking (backslip), rate-and-state and rate-strengthening friction, stress-driven afterslip (the forward model used in Topic 3), viscoelastic relaxation in Maxwell and Burgers materials, power-law flow laws, and poroelastic rebound.</li><li><b class="k">Tsunami modelling</b>: from seafloor deformation to the initial sea surface (including the contribution of horizontal motion on sloping seafloor), the shallow-water equations, dispersion (Boussinesq equations), adaptive mesh refinement, and tsunami Green's functions.</li><li><b class="k">Seismic waves</b>: the elastic wave equation, body and surface waves, synthetic seismograms, kinematic rupture models, and back projection of array recordings.</li></ul>
+<h2>Topic 2 · Inverse problems and Bayesian inversion</h2><h3>A · Probability for inverse problems</h3><ul>
+<li><a href="2-01_basics.html"><b>2.01</b> Basics: deterministic physics, uncertain answers</a></li>
+<li><a href="2-02_bayes_in_pictures.html"><b>2.02</b> Bayes in pictures: what a posterior looks like</a></li>
+<li><a href="2-03_probability_distributions.html"><b>2.03</b> Probability distributions: describing numbers you cannot predict exactly</a></li>
+<li><a href="2-04_conditional_probability.html"><b>2.04</b> Joint, marginal and conditional probability; Bayes&#x27; rule</a></li>
+<li><a href="2-05_lln_clt.html"><b>2.05</b> Law of Large Numbers and Central Limit Theorem</a></li>
+<li><a href="2-06_matrix_primer.html"><b>2.06</b> Matrix and notation primer: the linear algebra an inversion actually uses</a></li>
+</ul><h3>B · Linear inversion, ill-posedness, priors</h3><ul>
+<li><a href="2-07_least_squares.html"><b>2.07</b> Least squares: the maximum-likelihood answer, and why it is not enough</a></li>
+<li><a href="2-08_bayesian_linear_map.html"><b>2.08</b> Bayesian linear inversion and the MAP</a></li>
+<li><a href="2-09_regularisation_smoothing.html"><b>2.09</b> Regularisation and smoothing are priors</a></li>
+<li><a href="2-10_loss_functions_optimisation.html"><b>2.10</b> Loss functions and optimisation: what a fitting program minimises, and how it walks downhill</a></li>
+<li><a href="2-11_choosing_a_prior.html"><b>2.11</b> Choosing a prior: families, shapes and prior-predictive checks</a></li>
+<li><a href="2-12_gaussian_processes.html"><b>2.12</b> Gaussian processes: priors on whole functions</a></li>
+</ul><h3>C · Errors and data weighting</h3><ul>
+<li><a href="2-13_model_errors_cd_cp.html"><b>2.13</b> Model errors: <i>C</i><sub>d</sub> and <i>C</i><sub>p</sub></a></li>
+<li><a href="2-14_building_cd_noise.html"><b>2.14</b> Building <i>C</i><sub>d</sub>: noise in GNSS, InSAR and tsunami data</a></li>
+</ul><h3>D · Computing a posterior: sampling</h3><ul>
+<li><a href="2-15_map_of_methods.html"><b>2.15</b> The map: five methods, six posterior shapes</a></li>
+<li><a href="2-16_metropolis.html"><b>2.16</b> Metropolis: the random walk</a></li>
+<li><a href="2-17_jax_differentiable.html"><b>2.17</b> JAX, differentiability and gradient-based methods</a></li>
+<li><a href="2-18_gradients_hmc_nuts.html"><b>2.18</b> Gradients, HMC and NUTS: sliding instead of stumbling</a></li>
+<li><a href="2-19_convergence_rhat.html"><b>2.19</b> Convergence, mixing, R-hat and Monte Carlo error</a></li>
+<li><a href="2-20_tempering_smc.html"><b>2.20</b> Tempering and SMC: turning the data up slowly</a></li>
+<li><a href="2-21_variational_inference_flows.html"><b>2.21</b> Variational inference and normalizing flows: inference as optimisation</a></li>
+<li><a href="2-22_gradients_through_physics.html"><b>2.22</b> Gradients through physics: finite differences, autodiff and adjoints</a></li>
+</ul><h3>E · Time-dependent and ensemble inversion</h3><ul>
+<li><a href="2-23_kalman_filter.html"><b>2.23</b> The Kalman filter: inversion through time</a></li>
+<li><a href="2-24_ensemble_kalman.html"><b>2.24</b> Ensemble Kalman methods: EnKF, EKI, EnKI</a></li>
+<li><a href="2-25_nonlinearity_ekf.html"><b>2.25</b> Nonlinearity: how to measure it, and how EKF, EnKI and the samplers cope</a></li>
+<li><a href="2-26_localized_enki.html"><b>2.26</b> Localized ensemble Kalman inversion: small ensembles, many unknowns</a></li>
+</ul><h3>F · Hyperparameters and weights</h3><ul>
+<li><a href="2-27_entropy_information.html"><b>2.27</b> Entropy and information: how much did the data teach us?</a></li>
+<li><a href="2-28_kl_divergence.html"><b>2.28</b> KL divergence: how different are two beliefs?</a></li>
+<li><a href="2-29_hyperparameters_information_criteria.html"><b>2.29</b> Choosing hyperparameters and comparing models</a></li>
+<li><a href="2-30_hierarchical_bayes_weights.html"><b>2.30</b> Hierarchical Bayes: who sets the weights?</a></li>
+<li><a href="2-31_smoothing_objectivity_model_error.html"><b>2.31</b> To smooth or not: smoothing, objectivity and model error</a></li>
+</ul><h3>G · Checking and synthesis</h3><ul>
+<li><a href="2-32_using_checking_posterior.html"><b>2.32</b> Using and checking a posterior</a></li>
+<li><a href="2-33_fault_slip_capstone.html"><b>2.33</b> Capstone: one fault-slip inversion, every choice</a></li>
+</ul><h2>Topic 3 · Forward surrogate models <span class="tag">under development</span></h2><ul>
+<li><a href="3-01_surrogates_101.html"><b>3.01</b> Surrogates 101: a cheap stand-in for the forward model</a></li>
+<li><a href="3-02_neural_networks_resnets.html"><b>3.02</b> Neural networks and ResNets from scratch</a></li>
+<li><a href="3-03_gp_surrogates_ces.html"><b>3.03</b> GP surrogates and Calibrate-Emulate-Sample</a></li>
+<li><a href="3-04_physics_informed_neural_networks.html"><b>3.04</b> Physics-informed neural networks</a></li>
+<li><a href="3-05_neural_operators_fno.html"><b>3.05</b> Neural operators: learning the map from a friction profile to afterslip</a></li>
+<li><a href="3-06_reduced_order_realtime.html"><b>3.06</b> Reduced-order models and real-time inference</a></li>
+<li><a href="3-07_inference_with_surrogates.html"><b>3.07</b> Inference with surrogates: putting it together</a></li>
+</ul>
+<h2>Topic 4 · Data and data processing <span class="tag">planned</span></h2>
+<ul class="planned"><li><b class="k">GNSS</b>: daily positions and velocities, high-rate GNSS displacement waveforms, reference frames, common-mode error, offsets, coloured noise (white, flicker and random walk; 2.14), and time-series models of postseismic motion.</li><li><b class="k">InSAR</b>: interferograms, phase unwrapping, atmospheric and orbital errors, decimation, and time-series methods; Sentinel-1, ALOS-2 and NISAR.</li><li><b class="k">Seafloor and ocean observations</b>: DART buoys; cabled seafloor networks such as S-net along the Japan Trench; ocean-bottom pressure and differential pressure gauges (DPG); GNSS-acoustic seafloor positioning; coastal tide gauges; and removing tides, instrument drift and non-tectonic signals.</li><li><b class="k">Satellite altimetry</b>: SWOT wide-swath sea-surface height and conventional nadir altimeters, as tsunami observations.</li><li><b class="k">Seismic data</b>: teleseismic body and surface waves, strong-motion accelerograms, instrument response, filtering and alignment.</li><li><b class="k">From data to C<sub>d</sub></b>: noise models, correlated errors and data weighting for each data type (2.14, 2.30).</li></ul>
+<p class="sub" style="margin-top:28px">Also: <a href="../playground.html">the sampler playground</a> (runs in the browser).
+Code MIT, text and figures CC BY 4.0.</p>
+</body></html>

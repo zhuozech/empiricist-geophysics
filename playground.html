@@ -1,0 +1,1308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sampler Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: an instrument bench. The posterior map is the large dial on the left; the problem, the sampler, its
+   abilities and the read-outs sit in a rack on the right; on a phone the rack drops below the map. */
+:root {
+  --bg: #eef1f4;
+  --panel: #fbfcfd;
+  --ink: #14181c;
+  --ink2: #48525d;
+  --muted: #7a8490;
+  --line: #d9dee4;
+  --band1: #e6e9ed;   /* 99 % region */
+  --band2: #cfd5db;   /* 90 % region */
+  --band3: #aab2bb;   /* 50 % region */
+  --c-rwm: #eb6834;
+  --c-grad: #2a78d6;
+  --c-smc: #1baf7a;
+  --c-enki: #4a3aa7;
+  --c-ekf: #52514e;   /* dark grey: the EKF colour used in the notebooks (00, 10) */
+  --good: #0ca30c;
+  --bad: #d03b3b;
+  --focus: #2a78d6;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1114; --panel: #161a1e; --ink: #e7ebef; --ink2: #b2bbc4; --muted: #86919c; --line: #2a3138;
+    --band1: #1c2126; --band2: #29313a; --band3: #3e4853;
+    --c-rwm: #e0652f; --c-grad: #3f8ce8; --c-smc: #22b884; --c-enki: #9085e9; --c-ekf: #c3c2b7; --focus: #3f8ce8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1114; --panel: #161a1e; --ink: #e7ebef; --ink2: #b2bbc4; --muted: #86919c; --line: #2a3138;
+  --band1: #1c2126; --band2: #29313a; --band3: #3e4853;
+  --c-rwm: #e0652f; --c-grad: #3f8ce8; --c-smc: #22b884; --c-enki: #9085e9; --c-ekf: #c3c2b7; --focus: #3f8ce8;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font: 14px/1.5 var(--font-body);
+  padding-inline: 16px; padding-block: 18px 28px;
+}
+.wrap { max-width: 1200px; margin: 0 auto; display: grid; gap: 16px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+h1 { font: 600 26px/1.15 var(--font-display); letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+header p { margin: 0; color: var(--ink2); max-width: 70ch; }
+.bench { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+@media (max-width: 920px) { .bench { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); }
+.mapcard { padding: 12px; display: grid; gap: 10px; min-width: 0; }
+.maphead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; }
+.maphead h2 { font: 600 17px/1.2 var(--font-display); margin: 0; }
+.maphead .sub { color: var(--muted); font-size: 12.5px; }
+#map { width: 100%; aspect-ratio: 1 / 1; max-width: 100%; display: block; border-radius: 6px; cursor: crosshair; touch-action: none; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--ink2); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; border: 1px solid var(--line); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.rack { display: grid; gap: 12px; min-width: 0; }
+.group { padding: 12px 14px; display: grid; gap: 10px; min-width: 0; }
+.label { font: 600 11.5px/1 var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button {
+  font: 500 13px/1 var(--font-body); color: var(--ink); background: transparent; border: 1px solid var(--line);
+  border-radius: 999px; padding: 7px 11px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+}
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.seg button:disabled { opacity: 0.4; cursor: not-allowed; }
+.seg button .dot { width: 8px; height: 8px; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.knob { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
+.knob label { font-size: 13px; color: var(--ink2); }
+.knob output { font: 500 12.5px var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.knob input[type="range"] { grid-column: 1 / -1; width: 100%; accent-color: var(--ink); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink2); }
+.transport { display: flex; flex-wrap: wrap; gap: 8px; }
+.transport button {
+  font: 600 13px/1 var(--font-body); padding: 9px 14px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+}
+.transport button.primary { background: var(--ink); color: var(--panel); border-color: var(--ink); min-width: 84px; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 14px; }
+.stat { display: grid; gap: 1px; min-width: 0; }
+.stat .k { font-size: 11.5px; color: var(--muted); }
+.stat .v { font: 500 14px var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.prob { display: grid; gap: 7px; }
+.prow { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 2px 10px; font-size: 13px; align-items: baseline; }
+.prow .k { color: var(--muted); font-size: 12px; }
+.prow .v { color: var(--ink); overflow-wrap: anywhere; min-width: 0; }
+.prow .v code { font: 500 12px var(--font-mono); color: var(--ink); }
+.chip { display: inline-flex; align-items: center; gap: 5px; font: 500 12px var(--font-body); padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.caps { display: grid; gap: 5px; font-size: 13px; }
+.cap { display: grid; grid-template-columns: 1.3em minmax(0, 1fr); gap: 6px; color: var(--ink2); align-items: baseline; }
+.cap .sym { font-weight: 700; text-align: center; }
+.cap .sym.yes { color: var(--good); }
+.cap .sym.no { color: var(--bad); }
+.cap .sym.part { color: var(--muted); }
+.cap .sym.na { color: var(--muted); }
+.verdict { font-size: 13px; color: var(--ink); padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; line-height: 1.45; }
+.verdict .ok { color: var(--good); font-weight: 700; }
+.verdict .no { color: var(--bad); font-weight: 700; }
+canvas.small { width: 100%; height: 118px; display: block; }
+.note { padding: 12px 14px; display: grid; gap: 8px; }
+.note h3 { font: 600 15px/1.2 var(--font-display); margin: 0; }
+.note p { margin: 0; color: var(--ink2); max-width: 74ch; }
+.note p.explain { color: var(--ink); }
+pre.log { margin: 0; font: 12px/1.45 var(--font-mono); color: var(--ink2); max-height: 160px; overflow: auto; white-space: pre; }
+.kbd { font: 500 11.5px var(--font-mono); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+footer { color: var(--muted); font-size: 12.5px; max-width: 110ch; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Sampler Playground</h1>
+    <p>Pick a posterior shape and a sampler, then watch it work. Grey regions are the exact posterior, computed by brute force on a grid (the answer key); they hold 50, 90 and 99 % of the probability. Coloured dots are what the sampler produced (draws, particles or members). Click the map to drop a chain somewhere else.</p>
+  </header>
+
+  <div class="bench">
+    <section class="card mapcard" aria-label="Posterior map">
+      <div class="maphead">
+        <h2 id="mapTitle">Banana · NUTS (auto L)</h2>
+        <span class="sub" id="mapSub">one station's distance and a regional prior</span>
+      </div>
+      <canvas id="map" role="img" aria-label="Posterior density with the sampler's draws"></canvas>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <aside class="rack">
+      <div class="card group">
+        <div class="label">Posterior shape</div>
+        <div class="seg" id="targets" role="group" aria-label="Posterior shape"></div>
+      </div>
+      <div class="card group">
+        <div class="label">Problem</div>
+        <div class="prob" id="problem"></div>
+        <div class="knob" id="knobBox" hidden>
+          <label for="rKnob">Station distance r (smaller = more curved)</label><output id="rOut" for="rKnob"></output>
+          <input type="range" id="rKnob" min="-0.511" max="4.605" step="0.01" value="0.916">
+        </div>
+      </div>
+      <div class="card group">
+        <div class="label">Sampler</div>
+        <div class="seg" id="samplers" role="group" aria-label="Sampler"></div>
+        <div id="knobs" style="display:grid; gap:10px"></div>
+      </div>
+      <div class="card group">
+        <div class="label" id="abilTitle">Abilities</div>
+        <div class="chips" id="abilChips"></div>
+        <div class="caps" id="abilCaps"></div>
+      </div>
+      <div class="card group">
+        <div class="transport">
+          <button class="primary" id="play" type="button">Pause</button>
+          <button id="stepBtn" type="button">Step</button>
+          <button id="resetBtn" type="button">Reset</button>
+        </div>
+        <div class="knob">
+          <label for="speed">Speed</label><output id="speedOut" for="speed"></output>
+          <input type="range" id="speed" min="1" max="10" step="1" value="3">
+        </div>
+        <div class="label">Keys: <span class="kbd">space</span> play/pause · <span class="kbd">→</span> step · <span class="kbd">r</span> reset</div>
+      </div>
+      <div class="card group">
+        <div class="label">Read-outs</div>
+        <div class="verdict" id="verdict"></div>
+        <div class="stats" id="stats"></div>
+        <canvas class="small" id="hist" aria-label="Marginal of the first parameter"></canvas>
+        <canvas class="small" id="trace" aria-label="History chart"></canvas>
+      </div>
+    </aside>
+  </div>
+
+  <section class="card note" aria-live="polite">
+    <h3 id="watchTitle">What to watch</h3>
+    <p class="explain" id="explain"></p>
+    <p id="watchText"></p>
+    <pre class="log" id="log" hidden></pre>
+  </section>
+  <footer>Companion to the Empiricist Geophysics notebooks: 2.16 Metropolis, 2.18 HMC and NUTS, 2.20 SMC, 2.24 EnKI. Same problems and colours as the notebooks. The EnKI update is the ETKF square root with the Iglesias &amp; Yang (2021) step; the EKF is the extended Kalman filter (iterated version: Bell &amp; Cathey 1993), the kind of filter Qiu et al. (2018) used in the Extended Network Inversion Filter. Compute times are what this page's JavaScript took inside the sampler, not a benchmark of production codes.</footer>
+</div>
+
+<script id="core">
+"use strict";
+// ============================================================ random numbers (seeded)
+function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let rand = mulberry32(20261009);
+function randn() { let u = 0; while (u === 0) u = rand(); const v = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
+const EV = { logp: 0, grad: 0, fwd: 0, jac: 0 };
+
+// ============================================================ problems (identical to bayeskit.problems)
+function makeInverse(o) {
+  const t = Object.assign({ kind: "inverse", canEnKI: true, canEKF: true }, o);
+  t.logprior = m => { let s = 0; for (let i = 0; i < 2; i++) { const z = (m[i] - o.m0[i]) / o.sd[i]; s -= 0.5 * z * z; } return s; };
+  t.loglik = m => { const g = o.forward(m); let s = 0; for (let i = 0; i < g.length; i++) { const r = (o.y[i] - g[i]) / o.sigma; s -= 0.5 * r * r; } return s; };
+  t.logp = m => { EV.logp++; return t.logprior(m) + t.loglik(m); };
+  t.grad = m => {
+    EV.grad++;
+    const g = o.forward(m), J = o.jac(m);
+    const out = [-(m[0] - o.m0[0]) / (o.sd[0] * o.sd[0]), -(m[1] - o.m0[1]) / (o.sd[1] * o.sd[1])];
+    for (let i = 0; i < g.length; i++) { const w = (o.y[i] - g[i]) / (o.sigma * o.sigma); out[0] += w * J[i][0]; out[1] += w * J[i][1]; }
+    return out;
+  };
+  t.samplePrior = () => [o.m0[0] + o.sd[0] * randn(), o.m0[1] + o.sd[1] * randn()];
+  return t;
+}
+function linear(o) {
+  return makeInverse(Object.assign(o, {
+    forward: m => o.A.map(r => r[0] * m[0] + r[1] * m[1]),
+    jac: () => o.A,
+  }));
+}
+function stations(o) {
+  return makeInverse(Object.assign(o, {
+    forward: m => o.st.map(s => Math.sqrt((m[0] - s[0]) ** 2 + (m[1] - s[1]) ** 2 + 1e-12)),
+    jac: m => o.st.map(s => { const r = Math.sqrt((m[0] - s[0]) ** 2 + (m[1] - s[1]) ** 2 + 1e-12); return [(m[0] - s[0]) / r, (m[1] - s[1]) / r]; }),
+  }));
+}
+function funnel(o) {
+  const s2 = o.s * o.s;
+  const t = Object.assign({ kind: "target", canEnKI: false, canEKF: false }, o);
+  t.logp = m => { EV.logp++; return -0.5 * m[0] * m[0] / s2 - 0.5 * m[1] * m[1] * Math.exp(-m[0]) - 0.5 * m[0]; };
+  t.grad = m => { EV.grad++; const e = Math.exp(-m[0]); return [-m[0] / s2 + 0.5 * m[1] * m[1] * e - 0.5, -m[1] * e]; };
+  // for SMC: temper from a broad Gaussian reference N(0, diag(s^2, 3^2)) to the funnel
+  t.logprior = m => -0.5 * m[0] * m[0] / s2 - 0.5 * m[1] * m[1] / 9;
+  t.loglik = m => (-0.5 * m[0] * m[0] / s2 - 0.5 * m[1] * m[1] * Math.exp(-m[0]) - 0.5 * m[0]) - t.logprior(m);
+  t.samplePrior = () => [o.s * randn(), 3 * randn()];
+  return t;
+}
+function fmtR(r) { return r >= 10 ? r.toFixed(0) : r >= 1 ? r.toFixed(1) : r.toFixed(2); }
+function bananaKnob(r) {
+  // one station at distance r straight below the origin; the noise-free datum r is a circle through the origin
+  const t = stations({ name: "Banana knob", sub: `one station at distance r = ${fmtR(r)} below the origin`, st: [[0, -r]], y: [r], sigma: 0.1,
+    m0: [0.5, 0.3], sd: [1, 1], ext: [-3, 3, -3, 3], labels: ["east (×10 km)", "north (×10 km)"], start: [0.9, 0.4],
+    meta: { M: 1, fwd: `d = |m − s|, station s at (0, −${fmtR(r)})`, words: "distance to one station (nonlinear)", linear: false,
+      prior: "N((0.5, 0.3), I), as in notebook 2.25", character: "an arc of radius r through the origin: nearly straight for large r, a ring for small r" } });
+  t.r = r; t.knob = true;
+  return t;
+}
+
+const TARGETS = {
+  gaussian: linear({ name: "Gaussian", sub: "linear forward model, Gaussian prior and noise", A: [[1, 0.2], [0.1, 1]], y: [1.0, -0.4], sigma: 0.35,
+    m0: [0, 0], sd: [1.5, 1.5], ext: [-2.5, 2.5, -2.5, 2.5], labels: ["m₁", "m₂"], start: [-2.0, 2.0],
+    meta: { M: 2, fwd: "d = G m, G = [[1, 0.2], [0.1, 1]]", words: "linear: each datum mostly sees one parameter", linear: true,
+      prior: "N(0, 1.5² I)", character: "Gaussian: a round ellipse" } }),
+  tradeoff: linear({ name: "Trade-off", sub: "two stations see two slip patches almost equally", A: [[1, 0.85], [0.85, 1]], y: [0.8, 0.9], sigma: 0.12,
+    m0: [0, 0], sd: [1.5, 1.5], ext: [-3, 3.5, -3, 3.5], labels: ["m₁", "m₂"], start: [-2.2, 2.6],
+    meta: { M: 2, fwd: "d = G m, G = [[1, 0.85], [0.85, 1]]", words: "linear: both data see m₁ + m₂ almost equally", linear: true,
+      prior: "N(0, 1.5² I)", character: "Gaussian ridge (strong trade-off)" } }),
+  banana: stations({ name: "Banana", sub: "one station's distance and a regional prior", st: [[0, -2.5]], y: [2.5], sigma: 0.1,
+    m0: [0, 0], sd: [1, 1], ext: [-2.7, 2.7, -3.2, 2.2], labels: ["east (×10 km)", "north (×10 km)"], start: [-1.8, -1.6],
+    meta: { M: 1, fwd: "d = |m − s|, station s at (0, −2.5)", words: "distance to one station (nonlinear)", linear: false,
+      prior: "N(0, I)", character: "curved arc (banana)" } }),
+  twomodes: stations({ name: "Two modes", sub: "two stations on a line cannot tell north from south", st: [[-1, 0], [1, 0]], y: [1.546434, 1.033015], sigma: 0.06,
+    m0: [0, 0.5], sd: [1, 1], ext: [-2.0, 2.4, -2.0, 2.4], labels: ["east (×10 km)", "north (×10 km)"], start: [0.3, -0.8], twoModes: true,
+    meta: { M: 2, fwd: "dᵢ = |m − sᵢ|, stations at (−1, 0) and (1, 0)", words: "distances to two stations (nonlinear)", linear: false,
+      prior: "N((0, 0.5), I)", character: "two separate peaks (north-south mirror)" } }),
+  ring: stations({ name: "Ring", sub: "one station and a broad prior: direction unknown", st: [[-0.6, 0]], y: [1.506287], sigma: 0.08,
+    m0: [0, 0], sd: [3, 3], ext: [-3.0, 2.0, -2.5, 2.5], labels: ["east (×10 km)", "north (×10 km)"], start: [0.9, 0.0],
+    meta: { M: 1, fwd: "d = |m − s|, station s at (−0.6, 0)", words: "distance to one station (nonlinear)", linear: false,
+      prior: "N(0, 3² I)", character: "a ring: every direction fits" } }),
+  funnel: funnel({ name: "Funnel", sub: "a log-variance v and the parameter x it scales (centered)", s: 1.5,
+    ext: [-5, 5, -9, 9], labels: ["v (log variance)", "x"], start: [3.0, 2.0], funnel: true,
+    meta: { M: 0, fwd: "none: no data, a prior structure only", words: "hierarchical scale", linear: null,
+      prior: "v ~ N(0, 1.5²), x | v ~ N(0, eᵛ)", character: "funnel: the scale changes across the space" } }),
+  knob: bananaKnob(2.5),
+};
+
+// ============================================================ small 2 x 2 algebra
+function mul2(A, B) { return [[A[0][0] * B[0][0] + A[0][1] * B[1][0], A[0][0] * B[0][1] + A[0][1] * B[1][1]], [A[1][0] * B[0][0] + A[1][1] * B[1][0], A[1][0] * B[0][1] + A[1][1] * B[1][1]]]; }
+function tr2(A) { return [[A[0][0], A[1][0]], [A[0][1], A[1][1]]]; }
+function inv2(S) { if (S.length === 1) return [[1 / S[0][0]]]; const [a, b] = S[0], [c, d] = S[1], det = a * d - b * c; return [[d / det, -b / det], [-c / det, a / det]]; }
+function chol2([c00, c01, c11]) { const l00 = Math.sqrt(Math.max(c00, 1e-12)), l10 = c01 / l00; return [l00, l10, Math.sqrt(Math.max(c11 - l10 * l10, 1e-12))]; }
+
+// ============================================================ samplers
+// Each sampler: reset(start), step() -> event (what happened, for the animation), plus read-outs.
+class RWM {
+  constructor(t, k) { this.t = t; this.k = k; this.kind = "mcmc"; }
+  reset(x0) { this.x = x0.slice(); this.lp = this.t.logp(this.x); this.n = 0; this.acc = 0; }
+  step() {
+    const s = this.k.step, p = [this.x[0] + s * randn(), this.x[1] + s * randn()];
+    const lpp = this.t.logp(p), from = this.x.slice();
+    const ok = Math.log(rand()) < lpp - this.lp;            // accept with probability min(1, p(y)/p(x))
+    if (ok) { this.x = p; this.lp = lpp; this.acc++; }
+    this.n++;
+    return { type: "rwm", from, prop: p, accepted: ok, x: this.x.slice() };
+  }
+}
+
+class HMC {
+  constructor(t, k) { this.t = t; this.k = k; this.kind = "mcmc"; }
+  reset(x0) { this.x = x0.slice(); this.lp = this.t.logp(this.x); this.g = this.t.grad(this.x); this.n = 0; this.acc = 0; this.div = 0; }
+  step() {
+    const eps = this.k.eps, L = this.k.L, t = this.t;
+    let x = this.x.slice(), g = this.g.slice(), lp = this.lp;
+    const p0 = [randn(), randn()];
+    const H0 = -this.lp + 0.5 * (p0[0] * p0[0] + p0[1] * p0[1]);
+    let p = [p0[0] + 0.5 * eps * g[0], p0[1] + 0.5 * eps * g[1]];
+    const path = [x.slice()];
+    let bad = false;
+    for (let l = 0; l < L; l++) {
+      x = [x[0] + eps * p[0], x[1] + eps * p[1]];
+      lp = t.logp(x); g = t.grad(x); path.push(x.slice());
+      if (!isFinite(lp) || !isFinite(g[0]) || !isFinite(g[1])) { bad = true; break; }
+      if (l < L - 1) p = [p[0] + eps * g[0], p[1] + eps * g[1]];
+    }
+    p = [p[0] + 0.5 * eps * g[0], p[1] + 0.5 * eps * g[1]];
+    const H1 = bad ? Infinity : -lp + 0.5 * (p[0] * p[0] + p[1] * p[1]);
+    const dH = H1 - H0, divergent = !(dH < 1000);
+    const ok = !divergent && Math.log(rand()) < -dH;
+    if (ok) { this.x = x.slice(); this.lp = lp; this.g = g.slice(); this.acc++; }
+    if (divergent) this.div++;
+    this.n++;
+    return { type: "traj", path, p0, accepted: ok, divergent, dH, x: this.x.slice() };
+  }
+}
+
+class NUTS {
+  // Hoffman & Gelman (2014) Algorithm 6, with dual-averaging step size during the first `warm` iterations.
+  constructor(t, k) { this.t = t; this.k = k; this.kind = "mcmc"; this.warm = 300; }
+  reset(x0) {
+    this.x = x0.slice(); this.lp = this.t.logp(this.x); this.g = this.t.grad(this.x);
+    this.n = 0; this.acc = 0; this.div = 0; this.depthSum = 0; this.leapSum = 0;
+    this.eps = this.k.eps; this.mu = Math.log(10 * this.eps); this.Hbar = 0; this.leb = 0; this.lastDepth = 0; this.lastLeap = 0;
+  }
+  leap(x, p, g, e) {
+    const ph = [p[0] + 0.5 * e * g[0], p[1] + 0.5 * e * g[1]];
+    const x1 = [x[0] + e * ph[0], x[1] + e * ph[1]];
+    const lp1 = this.t.logp(x1), g1 = this.t.grad(x1);
+    return [x1, [ph[0] + 0.5 * e * g1[0], ph[1] + 0.5 * e * g1[1]], lp1, g1];
+  }
+  build(x, p, g, logu, v, j, e, joint0, st) {
+    if (j === 0) {
+      const [x1, p1, lp1, g1] = this.leap(x, p, g, v * e);
+      const joint = isFinite(lp1) ? lp1 - 0.5 * (p1[0] * p1[0] + p1[1] * p1[1]) : -Infinity;
+      const n1 = logu <= joint ? 1 : 0, s1 = logu < joint + 1000;
+      if (!s1) st.div = true;
+      st.nleap++; st.rec.push({ x: x1, v, ok: n1 === 1 });
+      const a = isFinite(joint) ? Math.min(1, Math.exp(joint - joint0)) : 0;
+      return { xm: x1, pm: p1, gm: g1, xp: x1, pp: p1, gp: g1, x1, lp1, g1, n1, s1, a, na: 1 };
+    }
+    const T = this.build(x, p, g, logu, v, j - 1, e, joint0, st);
+    if (T.s1) {
+      let T2;
+      if (v === -1) { T2 = this.build(T.xm, T.pm, T.gm, logu, v, j - 1, e, joint0, st); T.xm = T2.xm; T.pm = T2.pm; T.gm = T2.gm; }
+      else { T2 = this.build(T.xp, T.pp, T.gp, logu, v, j - 1, e, joint0, st); T.xp = T2.xp; T.pp = T2.pp; T.gp = T2.gp; }
+      if (T.n1 + T2.n1 > 0 && rand() < T2.n1 / (T.n1 + T2.n1)) { T.x1 = T2.x1; T.lp1 = T2.lp1; T.g1 = T2.g1; }
+      T.a += T2.a; T.na += T2.na;
+      const dx = [T.xp[0] - T.xm[0], T.xp[1] - T.xm[1]];
+      T.s1 = T2.s1 && (dx[0] * T.pm[0] + dx[1] * T.pm[1] >= 0) && (dx[0] * T.pp[0] + dx[1] * T.pp[1] >= 0);
+      T.n1 += T2.n1;
+    }
+    return T;
+  }
+  step() {
+    const auto = this.k.auto, e = auto ? this.eps : this.k.eps;
+    const p0 = [randn(), randn()];
+    const joint0 = this.lp - 0.5 * (p0[0] * p0[0] + p0[1] * p0[1]);
+    const logu = joint0 + Math.log(rand());
+    let xm = this.x, xp = this.x, pm = p0, pp = p0, gm = this.g, gp = this.g;
+    let xn = this.x, lpn = this.lp, gn = this.g, nval = 1, s = true, j = 0, a = 0, na = 1;
+    const st = { div: false, nleap: 0, rec: [] }, doublings = [];
+    while (s && j < 10) {
+      const v = rand() < 0.5 ? -1 : 1, start = st.rec.length;
+      let T;
+      if (v === -1) { T = this.build(xm, pm, gm, logu, v, j, e, joint0, st); xm = T.xm; pm = T.pm; gm = T.gm; }
+      else { T = this.build(xp, pp, gp, logu, v, j, e, joint0, st); xp = T.xp; pp = T.pp; gp = T.gp; }
+      doublings.push({ v, j, start, end: st.rec.length });
+      if (T.s1 && rand() < Math.min(1, T.n1 / nval)) { xn = T.x1; lpn = T.lp1; gn = T.g1; }
+      nval += T.n1; a = T.a; na = T.na;
+      const dx = [xp[0] - xm[0], xp[1] - xm[1]];
+      s = T.s1 && (dx[0] * pm[0] + dx[1] * pm[1] >= 0) && (dx[0] * pp[0] + dx[1] * pp[1] >= 0);
+      j++;
+    }
+    // time-order the visited states for drawing
+    let tp = 0, tm = 0;
+    for (const d of doublings) for (let k = d.start; k < d.end; k++) st.rec[k].time = d.v === 1 ? ++tp : --tm;
+    const moved = xn !== this.x;
+    const from = this.x.slice();
+    this.x = xn; this.lp = lpn; this.g = gn;
+    if (moved) this.acc++;
+    if (st.div) this.div++;
+    const alpha = a / na;
+    if (auto && this.n < this.warm) {                        // dual averaging (Nesterov / Hoffman & Gelman)
+      const m = this.n + 1;
+      this.Hbar = (1 - 1 / (m + 10)) * this.Hbar + (0.8 - alpha) / (m + 10);
+      const le = this.mu - Math.sqrt(m) / 0.05 * this.Hbar, eta = Math.pow(m, -0.75);
+      this.leb = eta * le + (1 - eta) * this.leb;
+      this.eps = this.n === this.warm - 1 ? Math.exp(this.leb) : Math.exp(le);
+    }
+    this.n++; this.depthSum += j; this.leapSum += st.nleap; this.lastDepth = j; this.lastLeap = st.nleap;
+    return { type: "nuts", from, rec: st.rec, doublings, chosen: xn.slice(), divergent: st.div, depth: j, x: this.x.slice(), eps: e };
+  }
+}
+
+function weightedCov(X, w) {
+  let m0 = 0, m1 = 0; for (let i = 0; i < X.length; i++) { m0 += w[i] * X[i][0]; m1 += w[i] * X[i][1]; }
+  let c00 = 0, c01 = 0, c11 = 0;
+  for (let i = 0; i < X.length; i++) { const a = X[i][0] - m0, b = X[i][1] - m1; c00 += w[i] * a * a; c01 += w[i] * a * b; c11 += w[i] * b * b; }
+  return [c00, c01, c11];
+}
+
+class SMC {
+  // CATMIP-style: next beta from COV(weights) = 1 (ESS = N/2), systematic resampling, Metropolis moves
+  // with the particle covariance scaled by c = 1/9 + 8/9 * acceptance.
+  constructor(t, k) { this.t = t; this.k = k; this.kind = "pop"; }
+  reset() {
+    const N = this.k.N; this.X = []; this.ll = []; this.lpr = [];
+    for (let i = 0; i < N; i++) { const x = this.t.samplePrior(); this.X.push(x); this.ll.push(this.t.loglik(x)); this.lpr.push(this.t.logprior(x)); }
+    EV.logp += N; this.beta = 0; this.stage = 0; this.c = 0.5; this.done = false; this.lastAcc = NaN; this.lastEss = N;
+    this.hist = [{ beta: 0, ess: N }];
+  }
+  step() {
+    if (this.done) return null;
+    const N = this.X.length, ll = this.ll, mx = Math.max(...ll);
+    const cov = db => { let s = 0, s2 = 0; for (const l of ll) { const w = Math.exp(db * (l - mx)); s += w; s2 += w * w; } const m = s / N; return Math.sqrt(Math.max(s2 / N - m * m, 0)) / m; };
+    let db;
+    if (cov(1 - this.beta) <= 1) db = 1 - this.beta;
+    else { let lo = 0, hi = 1 - this.beta; for (let i = 0; i < 50; i++) { const mid = 0.5 * (lo + hi); if (cov(mid) < 1) lo = mid; else hi = mid; } db = lo > 0 ? lo : hi; }
+    const w = ll.map(l => Math.exp(db * (l - mx))); const sw = w.reduce((a, b) => a + b, 0); for (let i = 0; i < N; i++) w[i] /= sw;
+    const ess = 1 / w.reduce((a, b) => a + b * b, 0);
+    const C = weightedCov(this.X, w), Lc = chol2(C);
+    // systematic resampling
+    const idx = new Array(N), u0 = rand(); let cum = w[0], k = 0;
+    for (let i = 0; i < N; i++) { const u = (u0 + i) / N; while (u > cum && k < N - 1) { k++; cum += w[k]; } idx[i] = k; }
+    const before = this.X.map(x => x.slice()), parents = idx.slice(), betaFrom = this.beta;
+    let X = idx.map(i => this.X[i].slice()), L = idx.map(i => ll[i]), P = idx.map(i => this.lpr[i]);
+    this.beta = Math.min(1, this.beta + db);
+    let acc = 0;
+    for (let s = 0; s < this.k.moves; s++) {
+      for (let i = 0; i < N; i++) {
+        const z0 = randn(), z1 = randn();
+        const y = [X[i][0] + this.c * Lc[0] * z0, X[i][1] + this.c * (Lc[1] * z0 + Lc[2] * z1)];
+        const ly = this.t.loglik(y), py = this.t.logprior(y);
+        if (Math.log(rand()) < (py + this.beta * ly) - (P[i] + this.beta * L[i])) { X[i] = y; L[i] = ly; P[i] = py; acc++; }
+      }
+    }
+    EV.logp += N * this.k.moves;
+    const ar = acc / (N * this.k.moves);
+    this.c = 1 / 9 + 8 / 9 * ar;
+    this.X = X; this.ll = L; this.lpr = P; this.stage++; this.lastAcc = ar; this.lastEss = ess;
+    this.hist.push({ beta: this.beta, ess });
+    if (this.beta >= 1 - 1e-12) this.done = true;
+    return { type: "smc", before, weights: w, parents, after: X.map(x => x.slice()), betaFrom, beta: this.beta, ess, stage: this.stage };
+  }
+}
+
+function etkf(X, Y, y, sigma, alpha) {
+  // ETKF square-root update, written in the M-dimensional data space:
+  // T^-1 = I + A A^T with A = Yf^T / (sigma sqrt(alpha)), so only the M x M matrix A^T A is decomposed.
+  const J = X.length, M = y.length, sq = Math.sqrt(J - 1), sa = sigma * Math.sqrt(alpha);
+  const xm = [0, 0], ym = new Array(M).fill(0);
+  for (let j = 0; j < J; j++) { xm[0] += X[j][0] / J; xm[1] += X[j][1] / J; for (let i = 0; i < M; i++) ym[i] += Y[j][i] / J; }
+  const Xf = X.map(x => [(x[0] - xm[0]) / sq, (x[1] - xm[1]) / sq]);
+  const A = Y.map(r => r.map((v, i) => (v - ym[i]) / sq / sa));
+  const w = y.map((v, i) => (v - ym[i]) / sa);
+  const K = []; for (let a = 0; a < M; a++) { K.push([]); for (let b = 0; b < M; b++) { let s = 0; for (let j = 0; j < J; j++) s += A[j][a] * A[j][b]; K[a].push(s); } }
+  let lam, V;
+  if (M === 1) { lam = [K[0][0]]; V = [[1]]; }
+  else {
+    const a = K[0][0], b = K[0][1], d = K[1][1], h = Math.sqrt(0.25 * (a - d) ** 2 + b * b), tr = 0.5 * (a + d);
+    lam = [tr + h, tr - h];
+    V = lam.map(l => { if (Math.abs(b) > 1e-14) { const n = Math.hypot(l - d, b); return [(l - d) / n, b / n]; } return (Math.abs(l - a) < Math.abs(l - d)) ? [1, 0] : [0, 1]; });
+  }
+  const U = [];                                               // U = A V Sigma^-1 (J x M), columns with lam > 0
+  for (let k = 0; k < M; k++) { if (lam[k] <= 1e-14) continue; const sg = Math.sqrt(lam[k]); U.push({ lam: lam[k], u: A.map(r => r.reduce((s, v, i) => s + v * V[k][i], 0) / sg) }); }
+  const Aw = A.map(r => r.reduce((s, v, i) => s + v * w[i], 0));
+  const TAw = Aw.slice();
+  for (const { lam: l, u } of U) { let dot = 0; for (let j = 0; j < J; j++) dot += u[j] * Aw[j]; const f = l / (1 + l) * dot; for (let j = 0; j < J; j++) TAw[j] -= f * u[j]; }
+  const xn = [xm[0], xm[1]]; for (let j = 0; j < J; j++) { xn[0] += Xf[j][0] * TAw[j]; xn[1] += Xf[j][1] * TAw[j]; }
+  const terms = U.map(({ lam: l, u }) => { const XU = [0, 0]; for (let j = 0; j < J; j++) { XU[0] += u[j] * Xf[j][0]; XU[1] += u[j] * Xf[j][1]; } return { c: 1 / Math.sqrt(1 + l) - 1, u, XU }; });
+  return Xf.map((xf, j) => {
+    let a0 = xf[0], a1 = xf[1];
+    for (const { c, u, XU } of terms) { a0 += c * u[j] * XU[0]; a1 += c * u[j] * XU[1]; }
+    return [xn[0] + sq * a0, xn[1] + sq * a1];
+  });
+}
+
+class EnKI {
+  // theta = fraction of the likelihood assimilated. Tempered schedule (Iglesias & Yang 2021):
+  // dtheta = min(max(WRMS^-2, sqrt(M / (2 Var Phi))), max_dtheta, 1 - theta). Classic EKI: full data every step.
+  constructor(t, k) { this.t = t; this.k = k; this.kind = "pop"; }
+  fwd() { EV.fwd += this.X.length; return this.X.map(x => this.t.forward(x)); }
+  misfit(Y) { const t = this.t, M = t.y.length; const chi = Y.map(g => g.reduce((s, v, i) => s + ((t.y[i] - v) / t.sigma) ** 2, 0)); return { chi, wrms: Math.sqrt(chi.reduce((a, b) => a + b, 0) / (chi.length * M)) }; }
+  reset() {
+    const J = this.k.J; this.X = []; for (let j = 0; j < J; j++) this.X.push(this.t.samplePrior());
+    this.theta = 0; this.it = 0; this.done = false; this.Y = this.fwd(); const m = this.misfit(this.Y); this.wrms = m.wrms; this.chi = m.chi;
+    this.hist = [{ theta: 0, wrms: this.wrms }];
+    this.log = [`Iter ${String(0).padStart(2)}  Theta: ${(0).toFixed(4)}  WRMS: ${this.wrms.toFixed(3)}   (prior ensemble, J = ${J})`];
+  }
+  step() {
+    if (this.done) return null;
+    const M = this.t.y.length, Phi = this.chi.map(c => 0.5 * c);
+    const mean = Phi.reduce((a, b) => a + b, 0) / Phi.length, varPhi = Phi.reduce((a, b) => a + (b - mean) ** 2, 0) / Phi.length;
+    const classic = this.k.classic;
+    const ainv = classic ? 1 : Math.min(Math.max(this.wrms ** -2, Math.sqrt(M / (2 * varPhi))), this.k.maxdt, 1 - this.theta);
+    const before = this.X.map(x => x.slice()), thetaFrom = this.theta;
+    this.X = etkf(this.X, this.Y, this.t.y, this.t.sigma, 1 / ainv);
+    this.theta += ainv; this.it++;
+    this.Y = this.fwd(); const m = this.misfit(this.Y); this.wrms = m.wrms; this.chi = m.chi;
+    this.hist.push({ theta: this.theta, wrms: this.wrms });
+    this.log.push(`Iter ${String(this.it).padStart(2)}  Theta: ${this.theta.toFixed(4)}  WRMS: ${this.wrms.toFixed(3)}   dtheta ${ainv.toFixed(4)}`);
+    if ((!classic && this.theta >= 1 - 1e-12) || (classic && this.it >= 15) || this.it >= 40) this.done = true;
+    return { type: "ens", before, after: this.X.map(x => x.slice()), thetaFrom, theta: this.theta, wrms: this.wrms, it: this.it };
+  }
+}
+
+class EKF {
+  // Extended Kalman filter on a static problem. Iteration i linearises the forward model at m_i with the Jacobian H_i:
+  //   m_{i+1} = m0 + K_i (y - G(m_i) - H_i (m0 - m_i)),  K_i = P0 H_i^T (H_i P0 H_i^T + R)^-1,
+  //   P = (I - K H) P0 (I - K H)^T + K R K^T (Joseph form).
+  // iters = 1: classic EKF (one linearisation at the prior mean). iters > 1: iterated EKF = Gauss-Newton to the MAP
+  // (Bell & Cathey 1993).
+  constructor(t, k) { this.t = t; this.k = k; this.kind = "gauss"; }
+  reset() {
+    const t = this.t;
+    this.m0 = t.m0.slice(); this.P0 = [[t.sd[0] ** 2, 0], [0, t.sd[1] ** 2]];
+    this.m = this.m0.slice(); this.P = this.P0.map(r => r.slice()); this.mlin = this.m0.slice();
+    this.it = 0; this.done = false; this.nJac = 0; this.lastMove = NaN; this.lines = [];
+    this.z = Array.from({ length: 1000 }, () => [randn(), randn()]);
+    this.hist = [{ it: 0, m: this.m.slice() }];
+    this.log = [`Iter  0  mean (${this.m[0].toFixed(4)}, ${this.m[1].toFixed(4)})   prior; nothing linearised yet`];
+  }
+  draws(m = this.m, P = this.P) { const L = chol2([P[0][0], P[0][1], P[1][1]]); return this.z.map(z => [m[0] + L[0] * z[0], m[1] + L[1] * z[0] + L[2] * z[1]]); }
+  step() {
+    if (this.done) return null;
+    const t = this.t, mi = this.mlin.slice(), g = t.forward(mi), H = t.jac(mi), M = g.length, R = t.sigma * t.sigma, P0 = this.P0;
+    EV.fwd++; EV.jac++; this.nJac++;
+    const PHt = [0, 1].map(a => H.map(h => P0[a][0] * h[0] + P0[a][1] * h[1]));                 // 2 x M
+    const S = H.map((hi, i) => H.map((_, j) => hi[0] * PHt[0][j] + hi[1] * PHt[1][j] + (i === j ? R : 0)));
+    const Si = inv2(S);
+    const K = [0, 1].map(a => g.map((_, j) => PHt[a].reduce((s, v, i) => s + v * Si[i][j], 0)));  // 2 x M
+    const innov = g.map((gi, i) => t.y[i] - gi - (H[i][0] * (this.m0[0] - mi[0]) + H[i][1] * (this.m0[1] - mi[1])));
+    const mNew = [0, 1].map(a => this.m0[a] + K[a].reduce((s, v, i) => s + v * innov[i], 0));
+    const KH = [0, 1].map(a => [0, 1].map(b => K[a].reduce((s, v, i) => s + v * H[i][b], 0)));
+    const IKH = [[1 - KH[0][0], -KH[0][1]], [-KH[1][0], 1 - KH[1][1]]];
+    const A = mul2(mul2(IKH, P0), tr2(IKH));
+    const KRK = [0, 1].map(a => [0, 1].map(b => R * K[a].reduce((s, v, i) => s + v * K[b][i], 0)));
+    const Pn = [[A[0][0] + KRK[0][0], 0.5 * (A[0][1] + A[1][0]) + KRK[0][1]], [0.5 * (A[0][1] + A[1][0]) + KRK[1][0], A[1][1] + KRK[1][1]]];
+    // the linearised data: lines H_i . m = y_i - g_i + H_i . m_i
+    this.lines = H.map((h, i) => ({ h: h.slice(), c: t.y[i] - g[i] + h[0] * mi[0] + h[1] * mi[1] }));
+    const before = { m: this.m.slice(), P: this.P.map(r => r.slice()) };
+    this.lastMove = Math.hypot(mNew[0] - mi[0], mNew[1] - mi[1]);
+    this.m = mNew; this.P = Pn; this.mlin = mNew.slice(); this.it++;
+    this.hist.push({ it: this.it, m: mNew.slice() });
+    this.log.push(`Iter ${String(this.it).padStart(2)}  mean (${mNew[0].toFixed(4)}, ${mNew[1].toFixed(4)})   linearised at (${mi[0].toFixed(3)}, ${mi[1].toFixed(3)})   |step| ${this.lastMove.toExponential(2)}`);
+    if (this.it >= this.k.iters || this.lastMove < 1e-10) this.done = true;
+    return { type: "ekf", before, after: { m: mNew.slice(), P: Pn.map(r => r.slice()) }, lin: mi, lines: this.lines, it: this.it };
+  }
+}
+
+// exact posterior on a grid (the answer key): density, highest-density levels and moments
+function gridTruth(t, n) {
+  const [x0, x1, y0, y1] = t.ext, P = new Float64Array(n * n);
+  let mx = -Infinity;
+  const save = EV.logp;
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    const x = x0 + (c + 0.5) / n * (x1 - x0), y = y1 - (r + 0.5) / n * (y1 - y0);
+    const v = t.logp([x, y]); P[r * n + c] = v; if (v > mx) mx = v;
+  }
+  EV.logp = save;
+  let s = 0; for (let i = 0; i < P.length; i++) { P[i] = Math.exp(P[i] - mx); s += P[i]; }
+  for (let i = 0; i < P.length; i++) P[i] /= s;
+  const sorted = Array.from(P).sort((a, b) => b - a); const lev = {}; let cum = 0, q = [0.5, 0.9, 0.99], qi = 0;
+  for (let i = 0; i < sorted.length && qi < 3; i++) { cum += sorted[i]; while (qi < 3 && cum >= q[qi]) { lev[q[qi]] = sorted[i]; qi++; } }
+  let m0 = 0, m1 = 0;
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) { const p = P[r * n + c]; m0 += p * (x0 + (c + 0.5) / n * (x1 - x0)); m1 += p * (y1 - (r + 0.5) / n * (y1 - y0)); }
+  let v0 = 0, v1 = 0, v01 = 0, north = 0, neck = 0; const marg = new Float64Array(n);
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    const p = P[r * n + c], x = x0 + (c + 0.5) / n * (x1 - x0), y = y1 - (r + 0.5) / n * (y1 - y0);
+    v0 += p * (x - m0) ** 2; v1 += p * (y - m1) ** 2; v01 += p * (x - m0) * (y - m1); marg[c] += p;
+    if (y > 0) north += p; if (x < -2.5) neck += p;
+  }
+  return { n, P, lev, mean: [m0, m1], sd: [Math.sqrt(v0), Math.sqrt(v1)], corr: v01 / Math.sqrt(v0 * v1), marg, north, neck, ext: t.ext.slice() };
+}
+function logDensityAt(truth, x, y) {
+  // bilinear interpolation of log density between cell centres (accurate even across a ridge two cells wide)
+  const [x0, x1, y0, y1] = truth.ext, n = truth.n;
+  const fc = (x - x0) / (x1 - x0) * n - 0.5, fr = (y1 - y) / (y1 - y0) * n - 0.5;
+  if (fc < -0.5 || fc > n - 0.5 || fr < -0.5 || fr > n - 0.5) return -Infinity;
+  if (!truth.logP) truth.logP = Float64Array.from(truth.P, v => Math.log(Math.max(v, 1e-300)));
+  const c0 = Math.max(0, Math.min(n - 2, Math.floor(fc))), r0 = Math.max(0, Math.min(n - 2, Math.floor(fr)));
+  const tc = Math.min(1, Math.max(0, fc - c0)), tr = Math.min(1, Math.max(0, fr - r0)), L = truth.logP, i = r0 * n + c0;
+  return (1 - tr) * ((1 - tc) * L[i] + tc * L[i + 1]) + tr * ((1 - tc) * L[i + n] + tc * L[i + n + 1]);
+}
+function inside90(truth, pts) {
+  if (!pts.length) return NaN;
+  const L = Math.log(truth.lev[0.9]); let k = 0; for (const p of pts) if (logDensityAt(truth, p[0], p[1]) >= L) k++;
+  return k / pts.length;
+}
+function gridDraws(truth, n, seed = 7) {
+  // draws from the gridded posterior (a separate random stream so samplers are not disturbed)
+  const rr = mulberry32(seed), N = truth.n, [x0, x1, y0, y1] = truth.ext, cdf = new Float64Array(N * N);
+  let s = 0; for (let i = 0; i < N * N; i++) { s += truth.P[i]; cdf[i] = s; }
+  const out = [];
+  for (let k = 0; k < n; k++) {
+    const u = rr() * s; let lo = 0, hi = N * N - 1; while (lo < hi) { const mid = (lo + hi) >> 1; if (cdf[mid] < u) lo = mid + 1; else hi = mid; }
+    const r = Math.floor(lo / N), c = lo % N;
+    out.push([x0 + (c + rr()) / N * (x1 - x0), y1 - (r + rr()) / N * (y1 - y0)]);
+  }
+  return out;
+}
+function nonlinearity(t, truth, n = 20000) {   // 20,000 draws: Monte Carlo spread about 1 %
+  // NL = RMS over the posterior of the second-order Taylor residual, in noise units:
+  //   sqrt(mean_m mean_i ((G_i(m) - G_i(m*) - J_i(m*)(m - m*)) / sigma)^2), m* = posterior mean.
+  if (!t.forward) return null;
+  const ms = truth.mean, g0 = t.forward(ms), J = t.jac(ms);
+  let s = 0, cnt = 0;
+  for (const m of gridDraws(truth, n)) {
+    const g = t.forward(m);
+    for (let i = 0; i < g.length; i++) { const lin = g0[i] + J[i][0] * (m[0] - ms[0]) + J[i][1] * (m[1] - ms[1]); const r = (g[i] - lin) / t.sigma; s += r * r; cnt++; }
+  }
+  return Math.sqrt(s / cnt);
+}
+
+function essGeyer(x) {
+  const n = x.length; if (n < 20) return NaN;
+  const m = x.reduce((a, b) => a + b, 0) / n; let c0 = 0; for (const v of x) c0 += (v - m) ** 2; c0 /= n; if (c0 <= 0) return NaN;
+  const rho = k => { let s = 0; for (let i = 0; i + k < n; i++) s += (x[i] - m) * (x[i + k] - m); return s / n / c0; };
+  let sum = 0, prev = Infinity;
+  for (let k = 0; k + 1 < n && k < 2000; k += 2) { let ps = (k === 0 ? 1 : rho(k)) + rho(k + 1); if (ps <= 0) break; ps = Math.min(ps, prev); prev = ps; sum += ps; }
+  const tau = Math.max(-1 + 2 * sum, 1 / Math.log10(n));     // Stan's cap: ESS <= n log10(n)
+  return n / tau;
+}
+</script>
+
+<script>
+"use strict";
+// ============================================================ UI state
+const SAMPLERS = {
+  rwm: { name: "Metropolis", color: "--c-rwm", make: (t, k) => new RWM(t, k) },
+  hmc: { name: "HMC (fixed L)", color: "--c-grad", make: (t, k) => new HMC(t, k) },
+  nuts: { name: "NUTS (auto L)", color: "--c-grad", make: (t, k) => new NUTS(t, k) },
+  smc: { name: "SMC", color: "--c-smc", make: (t, k) => new SMC(t, k) },
+  enki: { name: "EnKI", color: "--c-enki", make: (t, k) => new EnKI(t, k) },
+  ekf: { name: "EKF", color: "--c-ekf", make: (t, k) => new EKF(t, k) },
+};
+const K = { step: 0.35, eps: 0.15, L: 20, auto: true, N: 1500, moves: 10, J: 500, maxdt: 1.0, classic: false, iters: 1, loop: true, r: 2.5 };
+const LOOP = { id: "loop", label: "Loop: start again 2 s after the end", check: true, noRestart: true };
+const KNOBS = {
+  rwm: [{ id: "step", label: "Step size", min: -2.3, max: 1.1, log: true, fmt: v => v.toFixed(3) }],
+  hmc: [{ id: "eps", label: "Leapfrog step ε", min: -3.5, max: 0.3, log: true, fmt: v => v.toFixed(3) },
+        { id: "L", label: "Leapfrog steps L (fixed; NUTS chooses this itself)", min: 1, max: 80, step: 1, fmt: v => String(v) }],
+  nuts: [{ id: "eps", label: "Step size ε (start value if adapting)", min: -3.5, max: 0.3, log: true, fmt: v => v.toFixed(3) },
+         { id: "auto", label: "Adapt ε during the first 300 iterations", check: true }],
+  smc: [{ id: "N", label: "Particles N", min: 100, max: 4000, step: 100, fmt: v => String(v) },
+        { id: "moves", label: "Metropolis moves per stage", min: 1, max: 30, step: 1, fmt: v => String(v) }, LOOP],
+  enki: [{ id: "J", label: "Ensemble size J", min: 10, max: 3000, step: 10, fmt: v => String(v) },
+         { id: "maxdt", label: "Cap on Δθ per update (max_dtheta)", min: 0.02, max: 1, step: 0.01, fmt: v => v.toFixed(2) },
+         { id: "classic", label: "Classic EKI: full data every update (no tempering)", check: true }, LOOP],
+  ekf: [{ id: "iters", label: "Iterations: 1 = classic EKF, more = iterated EKF", min: 1, max: 20, step: 1, fmt: v => v === 1 ? "1 (classic)" : String(v) }, LOOP],
+};
+// what each method can and cannot do (yes / partly / no), shown in the Abilities card
+const ABIL = {
+  rwm: { chips: ["needs gradient: no", "output: correlated samples", "cost: log p evaluations"],
+    caps: [["yes", "exact for linear-Gaussian, given enough draws"], ["part", "follows curved ridges, but slowly (random steps)"],
+           ["no", "finds several peaks with the right weights"], ["no", "handles funnels (no single step size fits)"]] },
+  hmc: { chips: ["needs gradient: yes", "output: correlated samples", "cost: gradients (L per iteration)"],
+    caps: [["yes", "exact for linear-Gaussian, given enough draws"], ["yes", "follows curved ridges (the gradient steers it)"],
+           ["no", "finds several peaks with the right weights"], ["no", "handles funnels unless reparameterised"], ["part", "you must tune ε and L"]] },
+  nuts: { chips: ["needs gradient: yes", "output: correlated samples", "cost: gradients (it chooses how many)"],
+    caps: [["yes", "exact for linear-Gaussian, given enough draws"], ["yes", "follows curved ridges (the gradient steers it)"],
+           ["no", "finds several peaks with the right weights"], ["no", "handles funnels unless reparameterised (divergences warn you)"], ["yes", "tunes ε and L itself"]] },
+  smc: { chips: ["needs gradient: no", "output: equally weighted particles", "cost: many log p evaluations"],
+    caps: [["yes", "exact for linear-Gaussian, given enough particles"], ["yes", "follows curved ridges (many particles, shaped moves)"],
+           ["yes", "finds several peaks with the right weights"], ["no", "handles funnels (moves too big for the neck)"]] },
+  enki: { chips: ["needs gradient: no", "output: an ensemble", "cost: forward runs (J per update)"],
+    caps: [["yes", "exact for linear-Gaussian (large J)"], ["part", "follows curved ridges only partly (one Kalman rule for all)"],
+           ["no", "finds several peaks with the right weights"], ["na", "funnels: not applicable (needs data and a forward model)"]] },
+  ekf: { chips: ["needs gradient: yes (Jacobian)", "output: one Gaussian (mean + covariance)", "cost: a few forward runs + Jacobians"],
+    caps: [["yes", "exact for linear-Gaussian in one step"], ["no", "follows curved ridges (it uses the tangent line)"],
+           ["no", "finds several peaks with the right weights"], ["na", "funnels: not applicable (needs data and a forward model)"], ["yes", "cheapest by far"]] },
+};
+let tKey = "banana", sKey = "nuts", tgt = TARGETS[tKey], truth = null, smp = null, NLval = null, TG = null;
+const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let playing = !reduced;
+let speed = 3, samples = [], chain1 = [], anim = null, rejects = [], frame = 0, computeMs = 0, holdFrames = 0;
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ============================================================ canvases
+const map = $("map"), mctx = map.getContext("2d");
+const bandCanvas = document.createElement("canvas"), dotCanvas = document.createElement("canvas"), tempCanvas = document.createElement("canvas");
+let W = 600, dpr = 1, M = { l: 46, r: 12, t: 10, b: 38 }, lastBeta = NaN;
+function resize() {
+  const rect = map.getBoundingClientRect(); dpr = window.devicePixelRatio || 1; W = Math.max(260, Math.round(rect.width));
+  for (const c of [map, dotCanvas]) { c.width = Math.round(W * dpr); c.height = Math.round(W * dpr); }
+  M = W < 420 ? { l: 38, r: 8, t: 8, b: 32 } : { l: 46, r: 12, t: 10, b: 38 };
+  redrawDots(); for (const id of ["hist", "trace"]) { const c = $(id), r = c.getBoundingClientRect(); c.width = Math.round(r.width * dpr); c.height = Math.round(r.height * dpr); }
+}
+const sx = x => M.l + (x - tgt.ext[0]) / (tgt.ext[1] - tgt.ext[0]) * (W - M.l - M.r);
+const sy = y => M.t + (tgt.ext[3] - y) / (tgt.ext[3] - tgt.ext[2]) * (W - M.t - M.b);
+const ix = px => tgt.ext[0] + (px - M.l) / (W - M.l - M.r) * (tgt.ext[1] - tgt.ext[0]);
+const iy = py => tgt.ext[3] - (py - M.t) / (W - M.t - M.b) * (tgt.ext[3] - tgt.ext[2]);
+
+function hexToRgb(h) { h = h.replace("#", ""); if (h.length === 3) h = h.split("").map(c => c + c).join(""); const n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function paintBands(canvas, P, lev, n) {
+  canvas.width = n; canvas.height = n;
+  const ctx = canvas.getContext("2d"), img = ctx.createImageData(n, n);
+  const cols = [css("--panel"), css("--band1"), css("--band2"), css("--band3")].map(hexToRgb);
+  for (let i = 0; i < n * n; i++) {
+    const p = P[i], b = p >= lev[0.5] ? 3 : p >= lev[0.9] ? 2 : p >= lev[0.99] ? 1 : 0, c = cols[b];
+    img.data[4 * i] = c[0]; img.data[4 * i + 1] = c[1]; img.data[4 * i + 2] = c[2]; img.data[4 * i + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+}
+function renderBands() { paintBands(bandCanvas, truth.P, truth.lev, truth.n); lastBeta = NaN; }
+// tempered posterior p_beta = prior x L^beta on a coarser grid (SMC uses beta, EnKI uses theta)
+function temperedGrid(t, n) {
+  const [x0, x1, y0, y1] = t.ext, LP = new Float64Array(n * n), LL = new Float64Array(n * n);
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) {
+    const m = [x0 + (c + 0.5) / n * (x1 - x0), y1 - (r + 0.5) / n * (y1 - y0)];
+    LP[r * n + c] = t.logprior(m); LL[r * n + c] = t.loglik(m);
+  }
+  return { n, LP, LL };
+}
+function renderTempered(beta) {
+  if (!TG) return;
+  const b = Math.min(1, Math.max(0, beta));
+  if (Math.abs(b - lastBeta) < 1e-7) return;
+  const n = TG.n, v = new Float64Array(n * n); let mx = -Infinity;
+  for (let i = 0; i < n * n; i++) { v[i] = TG.LP[i] + b * TG.LL[i]; if (v[i] > mx) mx = v[i]; }
+  let s = 0; for (let i = 0; i < n * n; i++) { v[i] = Math.exp(v[i] - mx); s += v[i]; }
+  const sub = []; for (let i = 0; i < n * n; i += 2) sub.push(v[i] / s);
+  sub.sort((a, c) => c - a); const tot = sub.reduce((a, c) => a + c, 0), lev = {}; let cum = 0, qi = 0; const q = [0.5, 0.9, 0.99];
+  for (let i = 0; i < sub.length && qi < 3; i++) { cum += sub[i] / tot; while (qi < 3 && cum >= q[qi]) { lev[q[qi]] = sub[i]; qi++; } }
+  for (const qq of q) if (lev[qq] === undefined) lev[qq] = 0;
+  for (let i = 0; i < n * n; i++) v[i] /= s;
+  paintBands(tempCanvas, v, lev, n); lastBeta = b;
+}
+function color() { return css(SAMPLERS[sKey].color); }
+function drawDot(ctx, x, y, r, col, alpha) { ctx.globalAlpha = alpha; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(sx(x), sy(y), r, 0, 2 * Math.PI); ctx.fill(); ctx.globalAlpha = 1; }
+function addDots(pts) {
+  const ctx = dotCanvas.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); const col = color();
+  const r = samples.length > 6000 ? 1.3 : 1.8, a = samples.length > 6000 ? 0.35 : 0.5;
+  for (const p of pts) drawDot(ctx, p[0], p[1], r, col, a);
+}
+function redrawDots() {
+  const ctx = dotCanvas.getContext("2d"); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, dotCanvas.width, dotCanvas.height);
+  if (smp && smp.kind === "mcmc") addDots(samples);
+}
+
+function axes(ctx) {
+  const ink2 = css("--ink2"), line = css("--line"), mono = css("--font-mono");
+  ctx.strokeStyle = line; ctx.lineWidth = 1; ctx.strokeRect(M.l + 0.5, M.t + 0.5, W - M.l - M.r - 1, W - M.t - M.b - 1);
+  ctx.fillStyle = ink2; ctx.font = `11px ${mono}`;
+  const ticks = (a, b) => { const span = b - a, raw = span / 5, mag = Math.pow(10, Math.floor(Math.log10(raw))), st = [1, 2, 2.5, 5, 10].map(s => s * mag).find(s => s >= raw); const out = []; for (let v = Math.ceil(a / st) * st; v <= b + 1e-9; v += st) out.push(+v.toFixed(6)); return out; };
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  for (const v of ticks(tgt.ext[0], tgt.ext[1])) { const x = sx(v); ctx.fillRect(x, W - M.b, 1, 4); ctx.fillText(String(v), x, W - M.b + 6); }
+  ctx.textAlign = "right"; ctx.textBaseline = "middle";
+  for (const v of ticks(tgt.ext[2], tgt.ext[3])) { const y = sy(v); ctx.fillRect(M.l - 4, y, 4, 1); ctx.fillText(String(v), M.l - 7, y); }
+  ctx.font = `12px ${css("--font-body")}`; ctx.fillStyle = css("--ink2"); ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+  ctx.fillText(tgt.labels[0], M.l + (W - M.l - M.r) / 2, W - 2);
+  ctx.save(); ctx.translate(11, M.t + (W - M.t - M.b) / 2); ctx.rotate(-Math.PI / 2); ctx.textBaseline = "middle"; ctx.fillText(tgt.labels[1], 0, 0); ctx.restore();
+}
+function stationsDraw(ctx) {
+  if (!tgt.st) return; ctx.fillStyle = css("--ink");
+  for (const s of tgt.st) { const x = sx(s[0]), y = sy(s[1]); if (x < M.l || x > W - M.r || y < M.t || y > W - M.b) continue; ctx.beginPath(); ctx.moveTo(x, y - 7); ctx.lineTo(x + 6.5, y + 5); ctx.lineTo(x - 6.5, y + 5); ctx.closePath(); ctx.fill(); }
+}
+function cross(ctx, x, y, s, col) { ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx(x) - s, sy(y) - s); ctx.lineTo(sx(x) + s, sy(y) + s); ctx.moveTo(sx(x) + s, sy(y) - s); ctx.lineTo(sx(x) - s, sy(y) + s); ctx.stroke(); }
+function ringDot(ctx, x, y, col) { ctx.fillStyle = css("--panel"); ctx.beginPath(); ctx.arc(sx(x), sy(y), 7, 0, 2 * Math.PI); ctx.fill(); ctx.fillStyle = col; ctx.beginPath(); ctx.arc(sx(x), sy(y), 5, 0, 2 * Math.PI); ctx.fill(); }
+const ease = f => (f <= 0 ? 0 : f >= 1 ? 1 : 0.5 - 0.5 * Math.cos(Math.PI * f));
+const phase = (f, a, b) => Math.min(1, Math.max(0, (f - a) / (b - a)));
+
+// background tempering value for population methods (beta or theta), including the mid-animation morph
+function currentTemper() {
+  if (smp instanceof SMC) {
+    if (anim && anim.ev.type === "smc") return anim.ev.betaFrom + (anim.ev.beta - anim.ev.betaFrom) * ease(phase(animF(), 0, 0.3));
+    return smp.beta;
+  }
+  if (smp instanceof EnKI) {
+    if (anim && anim.ev.type === "ens") return Math.min(1, anim.ev.thetaFrom + (Math.min(1, anim.ev.theta) - anim.ev.thetaFrom) * ease(phase(animF(), 0, 0.3)));
+    return Math.min(1, smp.theta);
+  }
+  return 1;
+}
+function animF() { return anim ? Math.min(1, anim.t / anim.T) : 1; }
+
+function draw() {
+  const ctx = mctx; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = css("--panel"); ctx.fillRect(0, 0, W, W);
+  ctx.save(); ctx.beginPath(); ctx.rect(M.l, M.t, W - M.l - M.r, W - M.t - M.b); ctx.clip();
+  ctx.imageSmoothingEnabled = true;
+  if (smp.kind === "pop") { renderTempered(currentTemper()); ctx.drawImage(tempCanvas, M.l, M.t, W - M.l - M.r, W - M.t - M.b); }
+  else ctx.drawImage(bandCanvas, M.l, M.t, W - M.l - M.r, W - M.t - M.b);
+  const col = color(), bad = css("--bad");
+  if (smp.kind === "mcmc") {
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(dotCanvas, 0, 0); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const tail = chain1.length ? samples.slice(-20) : [];
+    if (tail.length > 1) { ctx.strokeStyle = col; ctx.globalAlpha = 0.35; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(sx(tail[0][0]), sy(tail[0][1])); for (const p of tail) ctx.lineTo(sx(p[0]), sy(p[1])); ctx.stroke(); ctx.globalAlpha = 1; }
+    for (const r of rejects) { cross(ctx, r.x[0], r.x[1], 4, bad); }
+    drawEvent(ctx, col, bad);
+    ringDot(ctx, smp.x[0], smp.x[1], col);
+  } else if (smp.kind === "pop") {
+    drawPopulation(ctx, col);
+  } else {
+    drawGauss(ctx, col);
+  }
+  stationsDraw(ctx);
+  overlay(ctx);
+  ctx.restore();
+  axes(ctx);
+}
+
+function drawEvent(ctx, col, bad) {
+  if (!anim) return; const e = anim.ev, f = animF();
+  if (e.type === "rwm") {
+    const grow = Math.min(1, f * 1.6), px = e.from[0] + (e.prop[0] - e.from[0]) * grow, py = e.from[1] + (e.prop[1] - e.from[1]) * grow;
+    ctx.strokeStyle = e.accepted ? col : bad; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx(e.from[0]), sy(e.from[1])); ctx.lineTo(sx(px), sy(py)); ctx.stroke();
+    if (grow >= 1 && !e.accepted) cross(ctx, e.prop[0], e.prop[1], 6, bad);
+  } else if (e.type === "traj") {
+    const n = e.path.length, upto = Math.max(1, Math.round(f * 1.25 * (n - 1)));
+    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx(e.path[0][0]), sy(e.path[0][1]));
+    for (let i = 1; i <= Math.min(upto, n - 1); i++) ctx.lineTo(sx(e.path[i][0]), sy(e.path[i][1])); ctx.stroke();
+    for (let i = 1; i <= Math.min(upto, n - 1); i++) drawDot(ctx, e.path[i][0], e.path[i][1], 2.2, col, 0.9);
+    const p0 = e.p0, s0 = e.path[0], k = 0.25 * (tgt.ext[1] - tgt.ext[0]) / 6;      // the random kick (momentum)
+    ctx.strokeStyle = css("--ink"); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(sx(s0[0]), sy(s0[1])); ctx.lineTo(sx(s0[0] + k * p0[0]), sy(s0[1] + k * p0[1])); ctx.stroke();
+    if (upto >= n - 1) { const end = e.path[n - 1]; if (!e.accepted) cross(ctx, end[0], end[1], 6, bad); }
+  } else if (e.type === "nuts") {
+    const nd = e.doublings.length, ph = f * 1.2 * nd, shown = Math.min(nd, Math.floor(ph) + 1), partial = Math.min(1, ph - Math.floor(ph));
+    const vis = [];
+    for (let d = 0; d < shown; d++) { const D = e.doublings[d], cnt = d < shown - 1 ? D.end - D.start : Math.max(1, Math.round(partial * (D.end - D.start))); for (let k = D.start; k < D.start + cnt && k < D.end; k++) vis.push(e.rec[k]); }
+    vis.push({ x: e.from, time: 0, ok: true });
+    vis.sort((a, b) => a.time - b.time);
+    ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); vis.forEach((s, i) => i ? ctx.lineTo(sx(s.x[0]), sy(s.x[1])) : ctx.moveTo(sx(s.x[0]), sy(s.x[1]))); ctx.stroke();
+    for (const s of vis) drawDot(ctx, s.x[0], s.x[1], s.ok ? 2.4 : 2.0, s.ok ? col : bad, s.ok ? 0.95 : 0.8);
+    if (ph >= nd) { const ends = [vis[0], vis[vis.length - 1]]; for (const s of ends) { ctx.strokeStyle = css("--ink"); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(sx(s.x[0]), sy(s.x[1]), 6, 0, 2 * Math.PI); ctx.stroke(); }
+      if (e.divergent) { const s = vis[vis.length - 1]; cross(ctx, s.x[0], s.x[1], 6, bad); } }
+  }
+}
+
+function popRadius(n) { return n > 2000 ? 1.5 : n > 600 ? 2 : 2.6; }
+function drawPopulation(ctx, col) {
+  const e = anim ? anim.ev : null, f = animF(), muted = css("--muted");
+  const pts = smp.X, n = pts.length, r = popRadius(n);
+  if (e && e.type === "smc") {
+    const N = e.before.length, copies = new Array(N).fill(0); for (const p of e.parents) copies[p]++;
+    if (f < 0.3) {                        // 1 reweight: dots grow or shrink with their weight
+      const g = ease(phase(f, 0, 0.3));
+      for (let i = 0; i < N; i++) {
+        const w = e.weights[i] * N, target = w < 0.02 ? 0.9 : Math.min(9, 1.2 + 2.2 * Math.sqrt(w));
+        drawDot(ctx, e.before[i][0], e.before[i][1], r + (target - r) * g, w < 0.02 ? muted : col, w < 0.02 ? 0.5 : 0.55);
+      }
+      return;
+    }
+    if (f < 0.5) {                        // 2 resample: zero-copy particles fade out, survivors scale with copies
+      const g = ease(phase(f, 0.3, 0.5));
+      for (let i = 0; i < N; i++) {
+        if (copies[i] === 0) { drawDot(ctx, e.before[i][0], e.before[i][1], 0.9, muted, 0.5 * (1 - g)); continue; }
+        const w = e.weights[i] * N, from = Math.min(9, 1.2 + 2.2 * Math.sqrt(w)), to = Math.min(10, 1.4 + 2.0 * Math.sqrt(copies[i]));
+        drawDot(ctx, e.before[i][0], e.before[i][1], from + (to - from) * g, col, 0.6);
+      }
+      return;
+    }
+    const g = ease(phase(f, 0.5, 0.85));  // 3 move: each clone slides from its parent to where its Metropolis steps took it
+    for (let i = 0; i < e.after.length; i++) { const a = e.before[e.parents[i]], b = e.after[i]; drawDot(ctx, a[0] + (b[0] - a[0]) * g, a[1] + (b[1] - a[1]) * g, r, col, 0.6); }
+    return;
+  }
+  if (e && e.type === "ens") {
+    const g = ease(phase(f, 0.25, 0.85));
+    ctx.strokeStyle = col; ctx.globalAlpha = 0.2; ctx.lineWidth = 1; ctx.beginPath();
+    for (let i = 0; i < e.after.length; i += Math.max(1, Math.floor(e.after.length / 300))) { const a = e.before[i], b = e.after[i]; ctx.moveTo(sx(a[0]), sy(a[1])); ctx.lineTo(sx(a[0] + (b[0] - a[0]) * g), sy(a[1] + (b[1] - a[1]) * g)); }
+    ctx.stroke(); ctx.globalAlpha = 1;
+    for (let i = 0; i < e.after.length; i++) { const a = e.before[i], b = e.after[i]; drawDot(ctx, a[0] + (b[0] - a[0]) * g, a[1] + (b[1] - a[1]) * g, r, col, 0.6); }
+    return;
+  }
+  for (const p of pts) drawDot(ctx, p[0], p[1], r, col, 0.6);
+}
+
+function ellipse(ctx, m, P, q, col, lw, alpha) {
+  const a = P[0][0], b = P[0][1], d = P[1][1], h = Math.sqrt(0.25 * (a - d) ** 2 + b * b), tr = 0.5 * (a + d);
+  const l1 = tr + h, l2 = Math.max(tr - h, 1e-14), ang = Math.abs(b) > 1e-14 ? Math.atan2(l1 - a, b) : (a >= d ? 0 : Math.PI / 2);
+  const k = Math.sqrt(-2 * Math.log(1 - q)), c = Math.cos(ang), s = Math.sin(ang);
+  ctx.strokeStyle = col; ctx.lineWidth = lw; ctx.globalAlpha = alpha; ctx.beginPath();
+  for (let i = 0; i <= 96; i++) { const t = i / 96 * 2 * Math.PI, u = k * Math.sqrt(l1) * Math.cos(t), v = k * Math.sqrt(l2) * Math.sin(t); const x = m[0] + c * u - s * v, y = m[1] + s * u + c * v; i ? ctx.lineTo(sx(x), sy(y)) : ctx.moveTo(sx(x), sy(y)); }
+  ctx.stroke(); ctx.globalAlpha = 1;
+}
+function lerpP(A, B, g) { return [[A[0][0] + (B[0][0] - A[0][0]) * g, A[0][1] + (B[0][1] - A[0][1]) * g], [A[1][0] + (B[1][0] - A[1][0]) * g, A[1][1] + (B[1][1] - A[1][1]) * g]]; }
+function drawGauss(ctx, col) {
+  const e = anim && anim.ev.type === "ekf" ? anim.ev : null, f = animF();
+  let m = smp.m, P = smp.P, lines = smp.lines, lin = smp.mlin, lineAlpha = 0.9;
+  if (e) {
+    const g = ease(phase(f, 0.3, 0.85));
+    m = [e.before.m[0] + (e.after.m[0] - e.before.m[0]) * g, e.before.m[1] + (e.after.m[1] - e.before.m[1]) * g];
+    P = lerpP(e.before.P, e.after.P, g); lines = e.lines; lin = e.lin; lineAlpha = 0.9 * ease(phase(f, 0, 0.3));
+  }
+  const pts = smp.draws(m, P);
+  for (const p of pts) drawDot(ctx, p[0], p[1], 1.8, col, 0.45);
+  for (const q of [0.5, 0.9, 0.99]) ellipse(ctx, m, P, q, col, 1.6, 0.95);
+  // the linearised data: straight lines tangent to the actual (curved) constraint at the linearisation point
+  if (lines && lines.length && smp.it > 0) {
+    ctx.strokeStyle = css("--ink"); ctx.lineWidth = 1; ctx.globalAlpha = lineAlpha; ctx.setLineDash([]);
+    const [x0, x1, y0, y1] = tgt.ext;
+    for (const { h, c } of lines) {
+      ctx.beginPath();
+      if (Math.abs(h[1]) > Math.abs(h[0])) { ctx.moveTo(sx(x0), sy((c - h[0] * x0) / h[1])); ctx.lineTo(sx(x1), sy((c - h[0] * x1) / h[1])); }
+      else { ctx.moveTo(sx((c - h[1] * y0) / h[0]), sy(y0)); ctx.lineTo(sx((c - h[1] * y1) / h[0]), sy(y1)); }
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = css("--ink"); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(sx(lin[0]), sy(lin[1]), 6, 0, 2 * Math.PI); ctx.stroke();
+  }
+  ringDot(ctx, m[0], m[1], col);
+}
+
+// labels and progress bars drawn on the canvas
+function pill(ctx, x, y, text, alignRight) {
+  ctx.font = `600 12px ${css("--font-body")}`; const w = ctx.measureText(text).width + 14, h = 22, x0 = alignRight ? x - w : x;
+  ctx.globalAlpha = 0.92; ctx.fillStyle = css("--panel"); ctx.strokeStyle = css("--line"); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x0, y, w, h, 6) : ctx.rect(x0, y, w, h); ctx.fill(); ctx.stroke(); ctx.globalAlpha = 1;
+  ctx.fillStyle = css("--ink"); ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(text, x0 + 7, y + h / 2);
+  return w;
+}
+function progressBar(ctx, value, label) {
+  // log-scale bar from 0.001 to 1 (tempering steps are roughly geometric)
+  const x0 = M.l + 10, y0 = W - M.b - 30, w = Math.min(230, (W - M.l - M.r) * 0.45), h = 7;
+  const lv = v => Math.min(1, Math.max(0, (Math.log10(Math.max(v, 1e-3)) + 3) / 3));
+  ctx.globalAlpha = 0.92; ctx.fillStyle = css("--panel"); ctx.fillRect(x0 - 6, y0 - 18, w + 12, h + 34); ctx.globalAlpha = 1;
+  ctx.strokeStyle = css("--line"); ctx.strokeRect(x0 - 6 + 0.5, y0 - 18 + 0.5, w + 12, h + 34);
+  ctx.fillStyle = css("--band2"); ctx.fillRect(x0, y0, w, h);
+  ctx.fillStyle = color(); ctx.fillRect(x0, y0, w * (value <= 0 ? 0 : lv(value)), h);
+  ctx.fillStyle = css("--ink"); ctx.font = `600 11.5px ${css("--font-body")}`; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+  ctx.fillText(label, x0, y0 - 5);
+  ctx.fillStyle = css("--muted"); ctx.font = `10.5px ${css("--font-mono")}`; ctx.textBaseline = "top";
+  for (const [v, t] of [[1e-3, "0.001"], [1e-2, "0.01"], [1e-1, "0.1"], [1, "1"]]) { const x = x0 + w * lv(v); ctx.textAlign = v === 1 ? "right" : v === 1e-3 ? "left" : "center"; ctx.fillText(t, x, y0 + h + 2); }
+}
+function overlay(ctx) {
+  const f = animF(), x = M.l + 8, y = M.t + 8;
+  if (smp instanceof SMC) {
+    const e = anim && anim.ev.type === "smc" ? anim.ev : null, b = currentTemper();
+    let text = smp.done && !e ? `done: β = 1, ${smp.stage} stages` : `β = 0: particles drawn from the prior`;
+    if (e) text = f < 0.3 ? `stage ${e.stage} · 1 reweight (dot size = weight)` : f < 0.5 ? `stage ${e.stage} · 2 resample (good particles cloned)` : f < 0.85 ? `stage ${e.stage} · 3 move (Metropolis steps)` : `stage ${e.stage} done`;
+    pill(ctx, x, y, text);
+    progressBar(ctx, b, `tempering β = ${b < 0.01 ? b.toFixed(4) : b.toFixed(3)}  (log scale)`);
+  } else if (smp instanceof EnKI) {
+    const e = anim && anim.ev.type === "ens" ? anim.ev : null, th = currentTemper();
+    let text = smp.done && !e ? (K.classic ? `stopped: data used ${smp.it} times` : `done: θ = 1 after ${smp.it} updates`) : `θ = 0: the prior ensemble`;
+    if (e) text = f < 0.25 ? `update ${e.it} · θ grows: more of the data` : f < 0.85 ? `update ${e.it} · Kalman rule moves every member` : `update ${e.it} done`;
+    pill(ctx, x, y, text);
+    const raw = e ? e.theta : smp.theta;
+    progressBar(ctx, th, K.classic && raw > 1 ? `data used ${raw.toFixed(0)}× (classic EKI)` : `θ = ${th < 0.01 ? th.toFixed(4) : th.toFixed(3)}  (log scale)`);
+  } else if (smp instanceof EKF) {
+    const e = anim && anim.ev.type === "ekf" ? anim.ev : null;
+    let text = smp.it === 0 ? "prior Gaussian (nothing linearised yet)" : smp.done ? `done after ${smp.it} linearisation${smp.it > 1 ? "s" : ""}` : `iteration ${smp.it}`;
+    if (e) text = f < 0.3 ? `iteration ${e.it} · linearise at the ring (tangent lines)` : f < 0.85 ? `iteration ${e.it} · Kalman update with the tangent model` : `iteration ${e.it} done`;
+    pill(ctx, x, y, text);
+  } else if (sKey === "nuts" && smp.n > 0) {
+    pill(ctx, x, y, `this iteration: ${smp.lastLeap} leapfrog steps (tree depth ${smp.lastDepth})`);
+  } else if (sKey === "hmc" && smp.n > 0) {
+    pill(ctx, x, y, `every iteration: L = ${K.L} leapfrog steps of ε = ${K.eps.toFixed(3)}`);
+  }
+}
+
+// ============================================================ small charts
+function smallChart(id, fn) {
+  const c = $(id), ctx = c.getContext("2d"), w = c.width / dpr, h = c.height / dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h); fn(ctx, w, h);
+}
+function currentPoints() {
+  if (smp.kind === "mcmc") return samples.length > 20000 ? samples.slice(-20000) : samples;
+  if (smp.kind === "pop") return smp.X;
+  return smp.draws();
+}
+function drawHist() {
+  smallChart("hist", (ctx, w, h) => {
+    const pad = { l: 6, r: 6, t: 16, b: 14 }, n = truth.n, [x0, x1] = tgt.ext;
+    const xs = currentPoints().map(s => s[0]);
+    const nb = 40, counts = new Array(nb).fill(0); for (const v of xs) { const b = Math.floor((v - x0) / (x1 - x0) * nb); if (b >= 0 && b < nb) counts[b]++; }
+    const tot = Math.max(1, xs.length), dens = counts.map(c => c / tot * nb / (x1 - x0));
+    const tm = Array.from(truth.marg, v => v * n / (x1 - x0));
+    const ymax = Math.max(...tm, ...dens) * 1.08 || 1;
+    const X = v => pad.l + (v - x0) / (x1 - x0) * (w - pad.l - pad.r), Y = v => h - pad.b - v / ymax * (h - pad.t - pad.b);
+    ctx.fillStyle = color(); ctx.globalAlpha = 0.55;
+    for (let b = 0; b < nb; b++) { const xa = X(x0 + b / nb * (x1 - x0)) + 0.5, xb = X(x0 + (b + 1) / nb * (x1 - x0)) - 0.5; ctx.fillRect(xa, Y(dens[b]), Math.max(0.5, xb - xa), h - pad.b - Y(dens[b])); }
+    ctx.globalAlpha = 1; ctx.strokeStyle = css("--ink"); ctx.lineWidth = 1.5; ctx.beginPath();
+    for (let i = 0; i < n; i++) { const v = x0 + (i + 0.5) / n * (x1 - x0); i ? ctx.lineTo(X(v), Y(tm[i])) : ctx.moveTo(X(v), Y(tm[i])); } ctx.stroke();
+    ctx.strokeStyle = css("--line"); ctx.beginPath(); ctx.moveTo(pad.l, h - pad.b + 0.5); ctx.lineTo(w - pad.r, h - pad.b + 0.5); ctx.stroke();
+    ctx.fillStyle = css("--ink2"); ctx.font = `11.5px ${css("--font-body")}`; ctx.textBaseline = "top"; ctx.textAlign = "left";
+    ctx.fillText(`${tgt.labels[0]}: method (bars) vs exact posterior (line)`, pad.l, 1);
+  });
+}
+function drawTrace() {
+  smallChart("trace", (ctx, w, h) => {
+    const pad = { l: 6, r: 6, t: 16, b: 6 }; ctx.fillStyle = css("--ink2"); ctx.font = `11.5px ${css("--font-body")}`; ctx.textBaseline = "top"; ctx.textAlign = "left";
+    if (smp.kind === "mcmc") {
+      const xs = chain1.slice(-400), [a, b] = [tgt.ext[0], tgt.ext[1]];
+      ctx.fillText(`trace of ${tgt.labels[0]}, last ${xs.length} iterations`, pad.l, 1);
+      const X = i => pad.l + i / 399 * (w - pad.l - pad.r), Y = v => h - pad.b - (v - a) / (b - a) * (h - pad.t - pad.b);
+      ctx.strokeStyle = css("--line"); ctx.beginPath(); ctx.moveTo(pad.l, Y(truth.mean[0])); ctx.lineTo(w - pad.r, Y(truth.mean[0])); ctx.stroke();
+      ctx.strokeStyle = color(); ctx.lineWidth = 1; ctx.beginPath(); xs.forEach((v, i) => i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))); ctx.stroke();
+    } else if (smp.kind === "pop") {
+      const hs = smp.hist, key = smp instanceof SMC ? "beta" : "theta", lab = key === "beta" ? "β" : "θ";
+      const top = Math.max(1, ...hs.map(s => s[key]));
+      ctx.fillText(`${lab} per ${key === "beta" ? "stage" : "update"} (target 1)`, pad.l, 1);
+      const nmax = Math.max(8, hs.length), X = i => pad.l + i / (nmax - 1) * (w - pad.l - pad.r), Y = v => h - pad.b - v / top * (h - pad.t - pad.b);
+      ctx.strokeStyle = css("--line"); ctx.beginPath(); ctx.moveTo(pad.l, Y(1)); ctx.lineTo(w - pad.r, Y(1)); ctx.stroke();
+      ctx.strokeStyle = color(); ctx.lineWidth = 1.6; ctx.beginPath(); hs.forEach((s, i) => i ? ctx.lineTo(X(i), Y(s[key])) : ctx.moveTo(X(i), Y(s[key]))); ctx.stroke();
+      ctx.fillStyle = color(); hs.forEach((s, i) => { ctx.beginPath(); ctx.arc(X(i), Y(s[key]), 2.6, 0, 2 * Math.PI); ctx.fill(); });
+    } else {
+      const hs = smp.hist; ctx.fillText(`EKF mean of ${tgt.labels[0]} per iteration (line = exact posterior mean)`, pad.l, 1);
+      const [a, b] = [tgt.ext[0], tgt.ext[1]], nmax = Math.max(6, hs.length), X = i => pad.l + i / (nmax - 1) * (w - pad.l - pad.r), Y = v => h - pad.b - (v - a) / (b - a) * (h - pad.t - pad.b);
+      ctx.strokeStyle = css("--line"); ctx.beginPath(); ctx.moveTo(pad.l, Y(truth.mean[0])); ctx.lineTo(w - pad.r, Y(truth.mean[0])); ctx.stroke();
+      ctx.strokeStyle = color(); ctx.lineWidth = 1.6; ctx.beginPath(); hs.forEach((s, i) => i ? ctx.lineTo(X(i), Y(s.m[0])) : ctx.moveTo(X(i), Y(s.m[0]))); ctx.stroke();
+      ctx.fillStyle = color(); hs.forEach((s, i) => { ctx.beginPath(); ctx.arc(X(i), Y(s.m[0]), 2.6, 0, 2 * Math.PI); ctx.fill(); });
+    }
+  });
+}
+
+// ============================================================ read-outs, verdict, problem and abilities cards
+function fmt(v, d = 2) { if (!Number.isFinite(v)) return "–"; const s = v.toFixed(d); return /^-0\.?0*$/.test(s) ? s.slice(1) : s; }
+function ms(v) { return v < 10 ? `${v.toFixed(1)} ms` : v < 10000 ? `${v.toFixed(0)} ms` : `${(v / 1000).toFixed(1)} s`; }
+function moments(pts) {
+  const n = pts.length, m = [0, 0], sd = [0, 0]; if (!n) return { m: [NaN, NaN], sd: [NaN, NaN] };
+  for (const p of pts) { m[0] += p[0] / n; m[1] += p[1] / n; } for (const p of pts) { sd[0] += (p[0] - m[0]) ** 2 / n; sd[1] += (p[1] - m[1]) ** 2 / n; }
+  return { m, sd: sd.map(Math.sqrt) };
+}
+function verdict() {
+  const pts = currentPoints(), ok = s => `<span class="ok">✓ ${s}</span>`, no = s => `<span class="no">✗ ${s}</span>`;
+  if (!pts.length) return "No draws yet.";
+  const inPhase = (smp instanceof SMC && !smp.done) || (smp instanceof EnKI && !smp.done);
+  if (inPhase) { const v = smp instanceof SMC ? `β = ${fmt(smp.beta, 3)}` : `θ = ${fmt(smp.theta, 3)}`; return `Still tempering (${v}): the particles follow the tempered posterior. The verdict against the exact posterior comes at the end.`; }
+  // a chain needs enough effective draws before a verdict means anything
+  let early = "";
+  if (smp.kind === "mcmc") { const e = essGeyer(chain1.slice(-5000)); if (!(e >= 200)) early = ` <span style="color:var(--muted)">(so far: verdict after ESS ≥ 200, now ${fmt(e, 0)})</span>`; }
+  const mark = (good, yes, nope) => early ? `<b>${good ? yes : nope}</b>` : (good ? ok(yes) : no(nope));
+  if (tgt.twoModes) {
+    const north = pts.filter(p => p[1] > 0).length / pts.length, both = Math.min(north, 1 - north) >= 0.05, right = Math.abs(north - truth.north) < 0.1;
+    return `Both peaks found: ${mark(both, "yes", "no")} · right weights: ${mark(both && right, "yes", "no")} (north share ${fmt(north)}, exact ${fmt(truth.north)})${early}`;
+  }
+  if (tgt.funnel) {
+    const neck = pts.filter(p => p[0] < -2.5).length / pts.length, good = neck > 0.5 * truth.neck;
+    return `Reaches the neck: ${mark(good, "yes", "not enough")} (share with v < −2.5: ${fmt(neck, 3)}, exact ${fmt(truth.neck, 3)})${early}`;
+  }
+  const f = inside90(truth, pts), good = f >= 0.85 && f <= 0.95;
+  return `Share inside the exact posterior's 90 % region: ${fmt(f)} ${mark(good, "matches (0.90 if right)", "off (0.90 if right)")}${early}`;
+}
+function stats() {
+  const rows = [];
+  if (smp.kind === "mcmc") {
+    const n = smp.n, mo = moments(samples);
+    rows.push(["iterations", n.toLocaleString()]);
+    rows.push([sKey === "nuts" ? "moved (accepted)" : "acceptance", fmt(100 * smp.acc / Math.max(1, n), 1) + " %"]);
+    rows.push(["mean of draws", `${fmt(mo.m[0])}, ${fmt(mo.m[1])}`]); rows.push(["exact mean", `${fmt(truth.mean[0])}, ${fmt(truth.mean[1])}`]);
+    rows.push(["sd of draws", `${fmt(mo.sd[0])}, ${fmt(mo.sd[1])}`]); rows.push(["exact sd", `${fmt(truth.sd[0])}, ${fmt(truth.sd[1])}`]);
+    rows.push([`ESS of ${tgt.labels[0].split(" ")[0]}`, fmt(essGeyer(chain1.slice(-5000)), 0)]);
+    rows.push([sKey === "rwm" ? "log p evaluations" : "gradient evaluations", (sKey === "rwm" ? EV.logp : EV.grad).toLocaleString()]);
+    if (sKey !== "rwm") rows.push(["divergences", `${smp.div}`]);
+    if (sKey === "nuts") { rows.push(["leapfrog steps this iteration", `${smp.lastLeap}`]); rows.push(["tree depth (last / mean)", `${smp.lastDepth} / ${fmt(smp.depthSum / Math.max(1, n), 1)}`]); rows.push(["step size ε", fmt(smp.k.auto ? smp.eps : smp.k.eps, 3)]); }
+    if (sKey === "hmc") { rows.push(["leapfrog steps L (fixed)", `${K.L}`]); if (anim && anim.ev.type === "traj") rows.push(["energy error ΔH", fmt(anim.ev.dH, 3)]); }
+  } else if (smp instanceof SMC) {
+    rows.push(["stage", String(smp.stage)]); rows.push(["β", fmt(smp.beta, 4)]);
+    rows.push(["ESS of weights", `${fmt(smp.lastEss, 0)} of ${smp.X.length}`]); rows.push(["move acceptance", fmt(100 * smp.lastAcc, 1) + " %"]);
+    rows.push(["log p evaluations", EV.logp.toLocaleString()]); rows.push(["status", smp.done ? "done: β = 1" : "tempering"]);
+    popRows(rows, smp.X);
+  } else if (smp instanceof EnKI) {
+    rows.push(["update", String(smp.it)]); rows.push(["θ", fmt(smp.theta, 4)]); rows.push(["WRMS", fmt(smp.wrms, 3)]);
+    rows.push(["forward runs", EV.fwd.toLocaleString()]);
+    rows.push(["status", smp.done ? (K.classic ? "stopped after 15 updates" : (smp.theta >= 1 - 1e-9 ? "done: θ = 1" : "stopped before θ = 1")) : (K.classic ? "classic EKI" : "tempering")]);
+    popRows(rows, smp.X);
+  } else {
+    rows.push(["iteration", `${smp.it} of ${K.iters}`]); rows.push(["status", smp.done ? (smp.it < K.iters ? "converged" : "done") : smp.it === 0 ? "prior" : "iterating"]);
+    rows.push(["forward runs", EV.fwd.toLocaleString()]); rows.push(["Jacobian evaluations", String(smp.nJac)]);
+    rows.push(["EKF mean", `${fmt(smp.m[0])}, ${fmt(smp.m[1])}`]); rows.push(["exact mean", `${fmt(truth.mean[0])}, ${fmt(truth.mean[1])}`]);
+    rows.push(["EKF sd", `${fmt(Math.sqrt(smp.P[0][0]))}, ${fmt(Math.sqrt(smp.P[1][1]))}`]); rows.push(["exact sd", `${fmt(truth.sd[0])}, ${fmt(truth.sd[1])}`]);
+    rows.push(["last step |Δm|", Number.isFinite(smp.lastMove) ? smp.lastMove.toExponential(1) : "–"]);
+  }
+  rows.push(["compute time", ms(computeMs)]);
+  $("stats").innerHTML = rows.map(([k, v]) => `<div class="stat"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
+  $("verdict").innerHTML = verdict();
+  const lg = $("log");
+  if (smp.log) { lg.hidden = false; lg.textContent = smp.log.join("\n"); lg.scrollTop = lg.scrollHeight; } else lg.hidden = true;
+}
+function popRows(rows, X) {
+  const mo = moments(X);
+  rows.push(["mean", `${fmt(mo.m[0])}, ${fmt(mo.m[1])}`]); rows.push(["exact mean", `${fmt(truth.mean[0])}, ${fmt(truth.mean[1])}`]);
+  rows.push(["sd", `${fmt(mo.sd[0])}, ${fmt(mo.sd[1])}`]); rows.push(["exact sd", `${fmt(truth.sd[0])}, ${fmt(truth.sd[1])}`]);
+}
+function nlBucket(v) { return v < 0.1 ? "effectively linear" : v < 1 ? "mildly nonlinear" : "strongly nonlinear"; }
+function updateProblem() {
+  const m = tgt.meta, rows = [];
+  rows.push(["unknowns", `2 (${tgt.labels.join(", ")})`]);
+  rows.push(["data", m.M ? `M = ${m.M} (noise σ = ${tgt.sigma})` : "none"]);
+  rows.push(["forward model", `<code>${m.fwd}</code><br>${m.words}`]);
+  rows.push(["prior", `<code>${m.prior}</code>`]);
+  let ch = m.character; if (tKey === "tradeoff") ch += `, correlation ${fmt(truth.corr)}`;
+  rows.push(["posterior", ch]);
+  if (m.linear === null) rows.push(["nonlinearity", "no forward model (prior structure)"]);
+  else rows.push(["nonlinearity", `NL = ${NLval < 0.005 ? "0" : fmt(NLval, NLval < 1 ? 3 : 2)} <span class="chip">${m.linear ? "linear" : nlBucket(NLval)}</span><br><span style="color:var(--muted);font-size:12px">RMS of the forward model's departure from its tangent over the exact posterior, in noise units</span>`]);
+  $("problem").innerHTML = rows.map(([k, v]) => `<div class="prow"><span class="k">${k}</span><span class="v">${v}</span></div>`).join("");
+  $("knobBox").hidden = !tgt.knob;
+}
+function updateAbilities() {
+  const A = ABIL[sKey];
+  $("abilTitle").textContent = `Abilities: ${SAMPLERS[sKey].name}`;
+  $("abilChips").innerHTML = A.chips.map(c => `<span class="chip">${c}</span>`).join("");
+  $("abilCaps").innerHTML = A.caps.map(([k, t]) => `<div class="cap"><span class="sym ${k === "yes" ? "yes" : k === "no" ? "no" : k === "na" ? "na" : "part"}">${k === "yes" ? "✓" : k === "no" ? "✗" : k === "na" ? "–" : "◐"}</span><span>${t}</span></div>`).join("");
+}
+function updateLegend() {
+  const pop = smp && smp.kind === "pop", noun = sKey === "smc" ? "particles" : sKey === "enki" ? "members" : sKey === "ekf" ? "draws from the EKF Gaussian (lines: its 50/90/99 % ellipses)" : "draws";
+  const band = pop ? (sKey === "smc" ? "of the tempered posterior at the current β" : "of the tempered posterior at the current θ") : "of the exact posterior";
+  let html = `<span><i class="sw" style="background:var(--band3)"></i>50 %</span><span><i class="sw" style="background:var(--band2)"></i>90 %</span><span><i class="sw" style="background:var(--band1)"></i>99 % ${band}</span><span><i class="dot" style="background:var(${SAMPLERS[sKey].color})"></i>${noun}</span>`;
+  if (smp && smp.kind === "mcmc") html += `<span><i class="dot" style="background:var(--bad)"></i>rejected or divergent</span>`;
+  if (sKey === "ekf") html += `<span><i class="sw" style="background:transparent;border-color:var(--ink)"></i>straight lines: the linearised data</span>`;
+  $("legend").innerHTML = html;
+}
+
+const EXPLAIN = {
+  rwm: "Metropolis: propose a random jump of fixed size; keep it if the posterior is not much lower there, otherwise stay and count the old point again.",
+  hmc: "HMC (fixed L): every iteration gives the point a random kick (black line) and slides it on the surface −log p for exactly L leapfrog steps of size ε, both set by you. NUTS below runs the same physics but chooses the number of steps itself.",
+  nuts: "NUTS (auto L) is HMC with automatic path length: it keeps doubling the slide (1, 2, 4, 8 … steps) until the two ends start to turn back toward each other (the U-turn, circled), then picks one visited point. It also tunes ε during the first 300 iterations. Same physics as HMC, no L to choose.",
+  smc: "SMC starts from the prior and turns the data up gradually (β from 0 to 1): the grey background is the tempered posterior prior × likelihood^β and sharpens as β grows. Each stage: reweight (dot size), resample (clone the good particles, drop the bad), move (Metropolis steps).",
+  enki: "EnKI moves every member with one Kalman rule built from the ensemble's own spread: no gradients, no accept/reject, no cloning. θ is the fraction of the data assimilated so far; the background is prior × likelihood^θ. The log lists θ, the step Δθ and the misfit (WRMS) at each iteration.",
+  ekf: "EKF (extended Kalman filter) replaces the forward model by its tangent at the linearisation point (circle; straight lines = the linearised data) and applies the Kalman formula, giving one Gaussian. Iterations = 1 is the classic EKF; more iterations re-linearise at the new mean (iterated EKF = Gauss-Newton), which ends at the peak (MAP). EKF uses the local slope (the Jacobian); EnKI uses the ensemble's average slope.",
+};
+const NOTES = {
+  rwm: { _: "Too small a step crawls; too large a step is rejected almost every time.",
+    tradeoff: "Round proposals on a thin tilted ridge: most land off the ridge and are rejected, so the step must be small, and the chain then creeps along the ridge. Compare the ESS and the compute time with NUTS.",
+    banana: "Round proposals cannot follow the curve. Watch how long the chain takes to travel from one tip of the banana to the other.",
+    knob: "Shrink r and the arc tightens into a ring: a random walk takes longer and longer to go around it.",
+    twomodes: "Start in one island and the chain stays there: a jump across the empty valley is almost always rejected. Click the other island to restart there and compare the north-mode share.",
+    funnel: "In the narrow neck (small v) a step tuned for the mouth is almost always rejected, so the chain rarely goes deep into the neck." },
+  hmc: { _: "Raise ε until the energy error grows and endpoints get rejected; raise L until the path comes back on itself (wasted work), lower it until moves get short.",
+    banana: "The slide follows the arc because the gradient keeps turning it back toward high probability.",
+    funnel: "A step size that is fine in the mouth is far too large in the neck: trajectories there blow up (divergences)." },
+  nuts: { _: "Compare the leapfrog steps it chose per iteration (read-outs) with the fixed L you would have had to guess in HMC.",
+    tradeoff: "Each glide runs along the ridge, so successive draws are far apart. Compare the ESS with Metropolis.",
+    banana: "The trajectory bends along the arc: the gradient of the log posterior steers it, instead of a blind random walk.",
+    knob: "Even as the arc tightens, the glide follows it; at very small r the ring has an empty middle and the chain must go around.",
+    twomodes: "A glide cannot cross the empty valley. NUTS explores one island very well and never finds the other unless you click it.",
+    funnel: "Divergences appear where the funnel narrows: the adapted step size suits the mouth, not the neck. Writing the model non-centered removes the funnel (notebooks 2.02 and 2.18)." },
+  smc: { _: "Watch the background sharpen stage by stage while the crowd follows it.",
+    twomodes: "At small β the background is one broad blob and particles cover both islands; as β grows the valley empties but each island keeps its share. Compare the north-mode share with the exact value at the end.",
+    funnel: "The moves are scaled to the whole cloud, which is far too wide for the neck, so few particles reach small v (verdict line).",
+    banana: "Many particles, each taking a few steps: the crowd fills the banana even though each move is a blind random step.",
+    knob: "At small r the tempered posterior becomes a ring; SMC keeps particles all around it." },
+  enki: { _: "Watch θ in the log: a healthy run reaches 1 in a handful of updates.",
+    gaussian: "Linear forward model: the final ensemble samples the exact posterior (compare mean and sd with the exact posterior).",
+    tradeoff: "Linear forward model: exact in the end, even for this narrow ridge. Tick ‘Classic EKI’ to see the ensemble shrink past the exact posterior when the full data are applied at every update.",
+    banana: "With one datum each update moves all members along one shared direction, by an amount set by each member's own prediction. The cloud bends partway toward the arc but spills over its edges.",
+    knob: "Move r: far away (nearly linear) EnKI matches the exact posterior; close (strongly nonlinear) the ensemble cannot form the ring. Compare the verdict line as NL grows.",
+    twomodes: "One Gaussian cloud cannot be two islands: the ensemble stretches across both modes and the valley between them, and θ may not reach 1 before the 40-update limit.",
+    ring: "The ring has no single direction to move along, so members end up spread over a blob that ignores the hole in the middle." },
+  ekf: { _: "The ellipses are the EKF answer; the grey regions are the exact posterior.",
+    gaussian: "Linear forward model: the tangent is the model itself, so one EKF step gives the exact posterior.",
+    tradeoff: "Linear forward model: one EKF step gives the exact posterior, ridge and all.",
+    banana: "The classic EKF linearises at the prior mean, which sits on the arc: its tangent is a straight horizontal line, so the ellipse lies along the tangent. Right near the peak, wrong along the arms.",
+    knob: "Shrink r: the tangent line stays straight while the posterior's arc curls into a ring, so the share of EKF draws inside the exact 90 % region drops as NL grows.",
+    twomodes: "One Gaussian cannot be two islands. Iterating moves it onto the island nearest the linearisation point (Gauss-Newton to that peak).",
+    ring: "Iterating walks the mean out to the ring; the ellipse then hugs one small piece of it." },
+};
+function updateNote() {
+  const N = NOTES[sKey]; $("watchTitle").textContent = `What to watch: ${SAMPLERS[sKey].name} on the ${tgt.name.toLowerCase()}`;
+  $("explain").textContent = EXPLAIN[sKey];
+  $("watchText").textContent = N[tKey] || N._;
+  $("mapTitle").textContent = `${tgt.name} · ${SAMPLERS[sKey].name}`; $("mapSub").textContent = tgt.sub;
+}
+
+// ============================================================ controls
+function buildButtons() {
+  $("targets").innerHTML = Object.entries(TARGETS).map(([k, t]) => `<button type="button" data-t="${k}" aria-pressed="${k === tKey}">${t.name}</button>`).join("");
+  $("samplers").innerHTML = Object.entries(SAMPLERS).map(([k, s]) => `<button type="button" data-s="${k}" aria-pressed="${k === sKey}"><i class="dot" style="background:var(${s.color})"></i>${s.name}</button>`).join("");
+}
+$("targets").onclick = e => { const b = e.target.closest("button"); if (!b) return; tKey = b.dataset.t; tgt = TARGETS[tKey]; if ((!tgt.canEnKI && sKey === "enki") || (!tgt.canEKF && sKey === "ekf")) sKey = "nuts"; setup(); };
+$("samplers").onclick = e => { const b = e.target.closest("button"); if (!b || b.disabled) return; sKey = b.dataset.s; setup(true); };
+function buildKnobs() {
+  const box = $("knobs"); box.innerHTML = "";
+  for (const k of KNOBS[sKey]) {
+    if (k.check) {
+      const d = document.createElement("label"); d.className = "check"; d.innerHTML = `<input type="checkbox" id="k_${k.id}" ${K[k.id] ? "checked" : ""}> ${k.label}`;
+      d.querySelector("input").onchange = e => { K[k.id] = e.target.checked; if (!k.noRestart) restart(); }; box.appendChild(d); continue;
+    }
+    const d = document.createElement("div"); d.className = "knob";
+    const val = k.log ? Math.log(K[k.id]) : K[k.id];
+    d.innerHTML = `<label for="k_${k.id}">${k.label}</label><output id="o_${k.id}">${k.fmt(K[k.id])}</output><input type="range" id="k_${k.id}" min="${k.min}" max="${k.max}" step="${k.step || 0.01}" value="${val}">`;
+    const inp = d.querySelector("input");
+    inp.oninput = () => { const v = k.log ? Math.exp(+inp.value) : +inp.value; K[k.id] = v; d.querySelector("output").textContent = k.fmt(v); if (smp.kind !== "mcmc") restart(); };
+    box.appendChild(d);
+  }
+}
+function computeTruth() {
+  truth = gridTruth(tgt, 280); renderBands();
+  TG = temperedGrid(tgt, 140); lastBeta = NaN;
+  // NL needs draws from the WHOLE posterior: use a window 1.5x wider than the map so no tail is cut off
+  const [x0, x1, y0, y1] = tgt.ext, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, hx = 0.75 * (x1 - x0), hy = 0.75 * (y1 - y0);
+  NLval = tgt.meta.linear === null ? null : nonlinearity(tgt, gridTruth({ ...tgt, ext: [cx - hx, cx + hx, cy - hy, cy + hy] }, 360));
+}
+function setup(samplerOnly) {
+  if (!samplerOnly) computeTruth();
+  buildButtons();
+  for (const b of $("samplers").querySelectorAll("button")) {
+    const off = (b.dataset.s === "enki" && !tgt.canEnKI) || (b.dataset.s === "ekf" && !tgt.canEKF);
+    b.disabled = off; b.title = off ? "needs data and a forward model; the funnel has neither" : "";
+  }
+  buildKnobs(); restart(); updateNote(); updateProblem(); updateAbilities(); updateLegend();
+}
+function restart(start) {
+  EV.logp = EV.grad = EV.fwd = EV.jac = 0; rand = mulberry32(20261009 + Math.floor(Math.random() * 1e6));
+  smp = SAMPLERS[sKey].make(tgt, K);
+  const t0 = performance.now(); smp.reset(start || tgt.start); computeMs = performance.now() - t0;
+  samples = []; chain1 = []; rejects = []; anim = null; holdFrames = 0; lastBeta = NaN;
+  redrawDots(); stats(); drawHist(); drawTrace(); updateLegend(); draw();
+}
+function doStep() { const t0 = performance.now(); const ev = smp.step(); computeMs += performance.now() - t0; return ev; }
+
+// ============================================================ the loop
+const SPEEDS = { 1: [60, 0], 2: [30, 0], 3: [14, 0], 4: [5, 0], 5: [1, 1], 6: [0, 3], 7: [0, 10], 8: [0, 30], 9: [0, 100], 10: [0, 300] };
+function eventFrames(fpe) {
+  if (smp instanceof SMC) return Math.min(600, Math.max(60, 18 * fpe));        // ~4 s per stage at the default speed
+  if (smp instanceof EnKI) return Math.min(420, Math.max(45, 11 * fpe));
+  if (smp instanceof EKF) return Math.min(360, Math.max(40, 9 * fpe));
+  return fpe;
+}
+function record(ev) {
+  if (!ev) return;
+  if (smp.kind === "mcmc") {
+    samples.push(ev.x); chain1.push(ev.x[0]); addDots([ev.x]);
+    if (ev.type === "rwm" && !ev.accepted) { rejects.push({ x: ev.prop, age: 0 }); }
+    if ((ev.type === "traj" || ev.type === "nuts") && ev.divergent) { const p = ev.type === "traj" ? ev.path[ev.path.length - 1] : ev.rec[ev.rec.length - 1].x; rejects.push({ x: p, age: 0 }); }
+    if (rejects.length > 60) rejects.splice(0, rejects.length - 60);
+  }
+}
+function finished() { return smp.kind !== "mcmc" && smp.done && !anim; }
+function tick() {
+  frame++;
+  const [framesPerEvent, perFrame] = SPEEDS[speed];
+  if (playing) {
+    if (framesPerEvent > 0) {
+      if (!anim || anim.t >= anim.T) {
+        if (anim) { record(anim.ev); anim = null; }
+        const ev = smp.done ? null : doStep();
+        if (ev) anim = { ev, t: 0, T: eventFrames(framesPerEvent) };
+      } else anim.t++;
+    } else {
+      if (anim) { record(anim.ev); anim = null; }
+      for (let i = 0; i < perFrame && !smp.done; i++) record(doStep());
+    }
+    if (finished()) {
+      if (K.loop) { holdFrames++; if (holdFrames > 120) restart(); }
+      else playing = false;
+    }
+    syncPlay();
+  }
+  draw();
+  if (frame % 6 === 0) { stats(); drawHist(); drawTrace(); }
+  requestAnimationFrame(tick);
+}
+function stepOnce() {
+  if (anim) { record(anim.ev); anim = null; }
+  if (smp.done) return;
+  const ev = doStep(); anim = { ev, t: 0, T: smp.kind === "mcmc" ? 18 : 90 }; playing = false; syncPlay();
+}
+function syncPlay() { $("play").textContent = playing ? "Pause" : "Play"; }
+
+// ============================================================ wiring
+$("play").onclick = () => { if (finished()) restart(); playing = !playing; syncPlay(); };
+$("stepBtn").onclick = stepOnce;
+$("resetBtn").onclick = () => restart();
+const speedNames = { 1: "slowest", 2: "slow", 3: "watch each step", 4: "brisk", 5: "1 per frame", 6: "3 per frame", 7: "10 per frame", 8: "30 per frame", 9: "100 per frame", 10: "300 per frame" };
+$("speed").oninput = e => { speed = +e.target.value; $("speedOut").textContent = speedNames[speed]; };
+$("speedOut").textContent = speedNames[speed];
+let knobPending = false;
+$("rKnob").oninput = e => {
+  K.r = Math.exp(+e.target.value); $("rOut").textContent = fmtR(K.r);
+  if (knobPending) return; knobPending = true;
+  requestAnimationFrame(() => { knobPending = false; TARGETS.knob = bananaKnob(K.r); if (tKey === "knob") { tgt = TARGETS.knob; computeTruth(); restart(); updateNote(); updateProblem(); } });
+};
+$("rOut").textContent = fmtR(K.r);
+map.addEventListener("pointerdown", e => {
+  if (smp.kind !== "mcmc") return;
+  const r = map.getBoundingClientRect(), x = ix(e.clientX - r.left), y = iy(e.clientY - r.top);
+  restart([x, y]);
+});
+document.addEventListener("keydown", e => {
+  if (e.target.closest("input, select, textarea")) return;
+  if (e.key === " ") { e.preventDefault(); $("play").click(); }
+  else if (e.key === "ArrowRight") { e.preventDefault(); stepOnce(); }
+  else if (e.key.toLowerCase() === "r") restart();
+});
+window.addEventListener("resize", () => { resize(); draw(); drawHist(); drawTrace(); });
+const themeChange = () => { renderBands(); lastBeta = NaN; redrawDots(); draw(); drawHist(); drawTrace(); };
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", themeChange);
+new MutationObserver(themeChange).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+// open in a working state: a few hundred NUTS iterations on the banana already drawn
+resize(); setup();
+{ const t0 = performance.now(); for (let i = 0; i < 400; i++) record(smp.step()); computeMs += performance.now() - t0; }
+redrawDots(); stats(); drawHist(); drawTrace(); syncPlay();
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>

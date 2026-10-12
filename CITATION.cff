@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this course material, please cite it as below."
+title: "Empiricist Geophysics: Data, Models, and Bayesian Inference"
+authors:
+  - family-names: Zhuo
+    given-names: Zechao
+    affiliation: Michigan State University
+type: software
+license: MIT
+date-released: 2026-10-11

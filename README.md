@@ -7,6 +7,8 @@ fit together in geophysics. I share them as an open course for readers who are n
 statistics, or to the forward models of geophysics (earthquake science). Every idea is shown on a small problem whose correct answer is
 known, every method is actually run, and every figure comes from that run. The notebooks explain each concept twice: first in plain words, then precisely
 (definition, assumptions, formula), followed by a worked example whose numbers the code prints.
+The notebooks were developed with Claude Opus 5.5 (Anthropic), an AI model that wrote much of the code, text and figures under my direction; I chose the topics, reviewed the results, and take responsibility for any errors.
+The course will continue to evolve as my understanding of the subject grows and changes.
 
 The course has four topics. Topic 2 is complete, Topic 3 is under development, and Topics 1 and 4 are planned.
 

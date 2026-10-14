@@ -3,7 +3,8 @@
 #
 # **Before this:** 2.03 (distributions), 2.08 (prior × likelihood), 2.09 (smoothing priors).
 # **You will be able to:** match a prior family to what you actually know (sign, scale, tails, a fixed total,
-# smoothness); see why a "flat" prior is flat only in one parameterisation; check a prior before fitting by simulating
+# smoothness); see why a "flat" prior is flat only in one parameterisation; handle a parameter with two bounds
+# through the logit transform; check a prior before fitting by simulating
 # data from it, and revise it; tell, patch by patch, whether an answer comes from the data or from the prior.
 # **Optional sections:** 7 (improper priors).
 #
@@ -14,7 +15,8 @@
 # the prior before looking at the fit.
 #
 # **Words this notebook defines:** prior family, Gaussian (normal), Laplace, Student-t, uniform, half-normal,
-# truncated normal, log-normal, Dirichlet, concentration parameter, parameterisation, Jacobian, prior-predictive
+# truncated normal, log-normal, Dirichlet, concentration parameter, parameterisation, Jacobian, logit (log-odds),
+# sigmoid (logistic function), logistic distribution, logit-normal, prior-predictive
 # distribution, prior-predictive check, shrinkage, improper prior.
 
 # %% [markdown]
@@ -263,6 +265,109 @@ plt.show()
 # * *"A uniform prior is uninformative."* It is uniform in one parameterisation and strongly informative in others.
 # * *"The prior only matters if the data are weak."* True, and weakly constrained parameters (deep slip, viscosity,
 #   friction) are exactly where the choice shows (section 6).
+
+# %% [markdown]
+# ### Two-sided bounds: the logit transform
+#
+# **In plain words.** The logarithm handles a quantity with one bound (positive). Many parameters have two: a fraction
+# between 0 and 1 (the share of the plate rate a fault is locked, a probability, a share of a fixed total), a slip
+# between zero and a physical maximum, a rake within a range. The **logit** stretches such an interval onto the whole
+# number line, and its inverse, the **sigmoid** (also called the **logistic function**), squeezes the line back into the
+# interval. Samplers like NUTS, ensemble Kalman updates, optimisers and neural networks all take steps in unbounded
+# space, so they can step outside a bound. Working in the stretched variable instead, every step lands inside the bounds.
+#
+# **Precisely.** For $a < x < b$, the logit (the logarithm of the **odds**, $\frac{x-a}{b-x}$; for $a=0$, $b=1$ the odds
+# of a probability) and the sigmoid are
+# $$\xi = \ln\frac{x-a}{b-x}, \qquad x = a + (b-a)\,\sigma(\xi), \qquad \sigma(\xi) = \frac{1}{1+e^{-\xi}} .$$
+# The midpoint of the interval maps to $\xi = 0$, the bounds to $\pm\infty$. The Jacobian (above) is
+# $dx/d\xi = (b-a)\,\sigma(\xi)\,[1-\sigma(\xi)] = (x-a)(b-x)/(b-a)$, so
+# $$p_\xi(\xi) = p_x(x)\,\frac{(x-a)(b-x)}{b-a}, \qquad p_x(x) = p_\xi(\xi)\,\frac{b-a}{(x-a)(b-x)} .$$
+# Two consequences, checked below. A **uniform** prior on $(a,b)$ becomes the standard **logistic distribution** in
+# $\xi$, a bell with standard deviation $\pi/\sqrt3$. And a **Gaussian** prior on $\xi$, $\xi \sim \mathcal N(0, s^2)$,
+# becomes a **logit-normal** distribution on $x$ whose shape depends on $s$: one peak in the middle while $s^2 < 2$, two
+# peaks pressed against the bounds once $s^2 > 2$.
+#
+# **Worked example.** A fraction $x$ on $(0, 1)$: 200,000 uniform draws taken to $\xi$, and Gaussian priors on $\xi$ with
+# three spreads taken back to $x$.
+
+# %%
+logit = lambda x: np.log(x) - np.log1p(-x)
+sigmoid = lambda z: 1.0 / (1.0 + np.exp(-z))
+x_u = np.random.default_rng(31).uniform(size=200_000)
+xi_u = logit(x_u)
+print(f"uniform x on (0, 1) -> xi: sd {xi_u.std():.3f} (logistic theory pi/sqrt(3) = {np.pi / np.sqrt(3):.3f}), "
+      f"median {np.median(xi_u):.3f}")
+S_LN = [0.5, 1.4, 3.0]
+xg = np.linspace(1e-6, 1 - 1e-6, 200_001)
+for s_ in S_LN:
+    dens = st.norm(0, s_).pdf(logit(xg)) / (xg * (1 - xg))                      # logit-normal density on (0, 1)
+    peak_mid = np.isclose(dens[len(xg) // 2], dens[(xg > 0.01) & (xg < 0.99)].max(), rtol=1e-6)
+    xs_ = sigmoid(np.random.default_rng(32).normal(0, s_, 200_000))
+    print(f"xi ~ N(0, {s_}^2) (s^2 = {s_ * s_:.2f}): x has {'one peak at 0.5' if peak_mid else 'two peaks near 0 and 1'}; "
+          f"share of x within 0.05 of a bound {np.mean((xs_ < 0.05) | (xs_ > 0.95)):.3f} (uniform: 0.100)")
+q_ = np.random.default_rng(33).normal(0.7, 1.2, 200_000)                      # some posterior in xi
+print(f"median: sigmoid(median xi) = {sigmoid(np.median(q_)):.4f}, median of sigmoid(xi) = {np.median(sigmoid(q_)):.4f}; "
+      f"mean: sigmoid(mean xi) = {sigmoid(q_.mean()):.4f}, mean of sigmoid(xi) = {sigmoid(q_).mean():.4f}")
+
+# %%
+fig, axs = plt.subplots(1, 3, figsize=(15.5, 4.0))
+ax = axs[0]
+z_ = np.linspace(-7, 7, 400)
+ax.plot(z_, sigmoid(z_), color=S.INK, lw=2)
+for yb in (0, 1):
+    ax.axhline(yb, color=S.MUTED, lw=0.8, ls=":")
+ax.axvline(0, color=S.AXIS, lw=0.8); ax.axhline(0.5, color=S.AXIS, lw=0.8)
+ax.annotate("the whole line ξ ...", (4.5, 0.18), ha="center", fontsize=8.5, color=S.INK2)
+ax.annotate("... squeezed into (0, 1)", (-3.6, 0.82), ha="center", fontsize=8.5, color=S.INK2)
+ax.set_xlabel("ξ = logit(x)  (unbounded)"); ax.set_ylabel("x = sigmoid(ξ)  (bounded)")
+ax.set_title("(a) The sigmoid and its inverse, the logit")
+ax = axs[1]
+ax.hist(xi_u, bins=np.linspace(-8, 8, 81), density=True, color=S.BLUE, alpha=0.45, label="uniform x, seen in ξ")
+ax.plot(z_, st.logistic.pdf(z_), color=S.BLUE, lw=2, label="logistic density")
+ax.plot(z_, st.norm(0, np.pi / np.sqrt(3)).pdf(z_), color=S.MUTED, lw=1.2, ls="--", label="Gaussian, same sd")
+ax.set_xlabel("ξ"); ax.set_ylabel("density"); ax.set_xlim(-8, 8)
+ax.set_title("(b) A uniform prior on x is a bell in ξ")
+ax.legend(fontsize=7.5, loc="upper left")
+ax = axs[2]
+xp = np.linspace(0.002, 0.998, 2000)                    # plot just inside the bounds (the density is extreme there)
+for s_, col in zip(S_LN, [S.AQUA, S.ORANGE, S.BAD]):
+    dens = st.norm(0, s_).pdf(logit(xp)) / (xp * (1 - xp))
+    ax.plot(xp, dens, color=col, lw=2, label=f"ξ ~ N(0, {s_}²)")
+ax.axhline(1, color=S.BLUE, lw=1.2, ls="--", label="uniform on (0, 1)")
+ax.set_ylim(0, 3.7); ax.set_xlim(0, 1)
+ax.set_xlabel("x (bounded quantity)"); ax.set_ylabel("density of x")
+ax.set_title("(c) A Gaussian in ξ, seen in x")
+ax.legend(fontsize=7.5, loc="upper center", bbox_to_anchor=(0.5, -0.17), ncol=2)
+fig.tight_layout()
+bk.savefig(fig, "2-11_logit")
+plt.show()
+
+# %% [markdown]
+# **How to read it.** (a) The sigmoid is steep near the middle and flat near the bounds: equal steps in ξ move x a lot in
+# the middle and very little near 0 or 1. (b) Uniform draws of x, taken to ξ, follow the logistic bell (its standard
+# deviation printed above matches $\pi/\sqrt3$). It looks Gaussian but has heavier tails than the Gaussian with the same
+# spread (dashed). (c) The reverse direction: a narrow Gaussian in ξ (s = 0.5) says "x is near the middle"; at s = 1.4,
+# just below $s^2 = 2$, x is broad and nearly flat in the middle but still thinner than uniform near the bounds; at
+# s = 3 the probability piles up against the two bounds (the shares within 0.05 of a bound are printed above). A "wide, vague" Gaussian in logit space is therefore a strong
+# belief that x is close to 0 or to 1.
+#
+# **When you need it.**
+# * **Samplers (NUTS, HMC).** NumPyro applies this map automatically for a prior with two bounds, including the Jacobian,
+#   so you write the prior on x and it samples ξ (2.17). Writing your own sampler, you must add the Jacobian term
+#   $\ln[(x-a)(b-x)/(b-a)]$ to the log density, or the prior silently changes.
+# * **Ensemble Kalman methods and optimisers.** The update happens in ξ, so the members never leave the bounds (2.24).
+#   The prior the ensemble starts from is the Gaussian in ξ, so choose its spread knowing panel (c).
+# * **Neural networks.** A network outputs an unbounded number; a sigmoid on the output keeps a predicted fraction or
+#   bounded parameter legal (3.07).
+# * **Reporting.** Transform the draws back to x and report quantiles of x. Quantiles (the median, the 5 % and 95 %
+#   points) pass through the transform unchanged, because the sigmoid is monotonic; means and the MAP do not (printed
+#   above, and 2.08).
+#
+# **Common misreadings.**
+# * *"A wide Gaussian prior in logit space is uninformative."* Above $s^2 = 2$ it piles probability against the bounds.
+# * *"The logit only changes coordinates, so it changes nothing."* The parameter's distribution is unchanged only if the
+#   Jacobian is included. A prior that looks the same in ξ and in x is two different priors.
+# * *"The mean in ξ, transformed, is the mean of x."* No; only quantiles transform this way.
 
 # %% [markdown]
 # ## 4. The Dirichlet prior: sharing a fixed total

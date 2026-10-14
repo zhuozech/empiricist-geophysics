@@ -432,7 +432,8 @@ plt.show()
 #   median or mean together with an interval.
 #
 # **In practice.** Any prior that bounds a parameter, through a truncation or a sigmoid transform (an S-shaped function
-# that maps any number into a bounded interval), produces posteriors
+# that maps any number into a bounded interval, $\sigma(\xi) = 1/(1+e^{-\xi})$ for the interval 0 to 1; 2.11, section 3,
+# explains it and its inverse, the logit), produces posteriors
 # skewed like this one near the bound; notebook 2.33, section 6, shows positivity on the fault toy.
 
 # %% [markdown]

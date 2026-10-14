@@ -595,7 +595,7 @@ plt.show()
 #
 # **Bounded fields.** Slip is often bounded (non-negative, and below some maximum). A common construction puts a
 # Matérn prior on an unbounded field $\xi$ and maps it to bounded slip by $x = lb + (ub - lb)\,\mathrm{sigmoid}(\xi)$
-# ($lb$, $ub$: lower and upper bounds; the sigmoid, 2.08, maps any number into the interval 0 to 1).
+# ($lb$, $ub$: lower and upper bounds; the sigmoid maps any number into the interval 0 to 1; 2.11, section 3).
 # Example values for this toy: $L$ = 100 km, $\nu$ = 1, standard deviation 1.4 on $\xi$, and bounds 0-3.5 m. What such
 # prior draws look like on this toy fault:
 

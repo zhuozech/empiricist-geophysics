@@ -77,7 +77,7 @@ assumes ("Before this") and what you will be able to do afterwards.
 | 2.08 | Bayesian linear inversion and the MAP | prior × likelihood, MAP, the Kalman-gain form, mean vs median vs MAP | `2-08_map_objective.png`, `2-08_laplace.png` |
 | 2.09 | Regularisation and smoothing are priors | why ill-posed problems need smoothing; L2, Laplacian, Matérn, L1, TV | `2-09_geometry.png`, `2-09_fault_six.png`, `2-09_l1_map_vs_posterior.png` |
 | 2.10 | Loss functions and optimisation | loss = negative log posterior; L2, L1, Huber, Student-t; optimisers; early stopping | `2-10_losses.png`, `2-10_optimiser_race.gif`, `2-10_laplace.png` |
-| 2.11 | Choosing a prior | Gaussian, Laplace, Student-t, bounded, log-normal, Dirichlet priors; prior-predictive checks | `2-11_families_1d.png`, `2-11_flat_not_neutral.png`, `2-11_prior_predictive.png` |
+| 2.11 | Choosing a prior | Gaussian, Laplace, Student-t, bounded, log-normal, Dirichlet priors; the logit transform for two-sided bounds; prior-predictive checks | `2-11_families_1d.png`, `2-11_flat_not_neutral.png`, `2-11_prior_predictive.png` |
 | 2.12 | Gaussian-process priors on fields | what L and ν do to a field; GP regression | `2-12_kernels_roughness.png`, `2-12_fault_fields.png` |
 | | **C · Errors and data weighting** | | |
 | 2.13 | Model errors C_d and C_p | measurement noise vs model error; coverage with and without C_p | `2-13_two_errors.png`, `2-13_coverage.png` |

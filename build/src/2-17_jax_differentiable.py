@@ -588,7 +588,8 @@ print("HalfNormal(1), support", dist.HalfNormal(1.0).support, "-> NumPyro sample
 print("Uniform(0, 3.5), support", dist.Uniform(0.0, 3.5).support, "-> NumPyro samples u and applies:", describe(biject_to(dist.Uniform(0.0, 3.5).support)))
 
 # %% [markdown]
-# For a bounded interval NumPyro applies a sigmoid followed by an affine map (printed above),
+# For a bounded interval NumPyro applies a sigmoid followed by an affine map (printed above; the sigmoid and its
+# inverse, the logit, are explained in 2.11, section 3),
 # $x = lb + (ub - lb)\,\mathrm{sigmoid}(\xi)$. The same map is a common way to keep ensemble Kalman members inside
 # bounds: the ensemble update happens in the unbounded $\xi$, so a Gaussian step can never leave the bounds (2.24).
 

@@ -800,7 +800,7 @@ plt.show()
 # is calibrated. Our network: input the data's first $K$ principal-component coefficients in noise units (the pilot
 # basis of section 2), two tanh layers of 128, and as output the weights, means and covariances of a mixture of three
 # Gaussians (a **mixture-density network**) in $\text{logit}(\mathbf u) = \ln[\mathbf u/(1-\mathbf u)]$, which maps the unit
-# box onto the whole plane, so every draw stays inside the prior box. 50,000 simulations, 10,000 Adam steps on mini-batches of 512, trained from
+# box onto the whole plane, so every draw stays inside the prior box (the logit transform: 2.11, section 3). 50,000 simulations, 10,000 Adam steps on mini-batches of 512, trained from
 # two random initialisations on the same simulations. **Simulation-based calibration** (2.32, section 5) tests it: for
 # 1,000 new simulations, the rank of the true value among 99 draws from $q$ must be uniform.
 

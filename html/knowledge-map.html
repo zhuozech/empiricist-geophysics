@@ -21,8 +21,9 @@ a { color:inherit; }
 #home { position:absolute; top:22px; left:28px; z-index:6; font-size:12.5px; font-weight:600; color:var(--mut);
   text-decoration:none; letter-spacing:.02em; }
 #home:hover { color:var(--ink); }
-#head { position:absolute; left:28px; top:64px; max-width:min(560px, 40vw); z-index:5; pointer-events:none;
-  transition:opacity .25s; }
+#side { position:absolute; left:28px; top:64px; bottom:24px; width:clamp(300px, 40vw, 560px); z-index:6;
+  display:flex; flex-direction:column; gap:16px; pointer-events:none; }   /* header on top, legend at the bottom */
+#head { flex:0 0 auto; pointer-events:none; transition:opacity .25s; }
 #head.away { opacity:0; }
 #head.away #links { pointer-events:none; }
 h1 { font:500 clamp(36px, 4.2vw, 62px)/1.04 "EB Garamond", "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
@@ -39,15 +40,18 @@ h1 .dot { color:var(--accent); }
 .btn:hover { background:rgba(130,145,190,.18); border-color:rgba(130,145,190,.6); }
 #links .lic { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); font-weight:600; }
 
-#legend { position:absolute; left:28px; bottom:24px; z-index:6; border-radius:18px; padding:12px; width:360px;
-  max-height:min(52vh, 460px); overflow-y:auto; overscroll-behavior:contain; }
-#find { width:100%; padding:8px 12px; border-radius:10px; border:1px solid var(--line); background:rgba(8,10,18,.6);
+#legend { margin-top:auto; flex:0 1 auto; min-height:0; width:360px; max-width:100%; border-radius:18px; padding:12px;
+  display:flex; flex-direction:column; pointer-events:auto; }      /* shrinks, never covers the header */
+#chips { flex:0 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; }
+#chips.more { -webkit-mask-image:linear-gradient(#000 calc(100% - 26px), transparent);
+  mask-image:linear-gradient(#000 calc(100% - 26px), transparent); }    /* more sections below: fade the edge */
+#find { flex:0 0 auto; width:100%; padding:8px 12px; border-radius:10px; border:1px solid var(--line); background:rgba(8,10,18,.6);
   color:var(--ink); font:inherit; font-size:13px; outline:none; user-select:text; -webkit-user-select:text; }
 #find:focus { border-color:rgba(160,175,220,.55); }
 #find::placeholder { color:var(--faint); }
-#results { margin:6px 0 2px; display:none; flex-direction:column; gap:2px; }
+#results { margin:6px 0 2px; display:none; flex-direction:column; gap:2px; flex:0 1 auto; min-height:0; overflow-y:auto; }
 #results.on { display:flex; }
-.lg-title { display:flex; align-items:center; justify-content:space-between; font-size:10px; letter-spacing:.16em;
+.lg-title { flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; font-size:10px; letter-spacing:.16em;
   text-transform:uppercase; color:var(--faint); margin:12px 4px 6px; font-weight:600; }
 #fold { display:none; border:0; background:none; color:var(--mut); font:inherit; font-size:10px; letter-spacing:.14em;
   text-transform:uppercase; cursor:pointer; padding:0; }
@@ -112,20 +116,24 @@ h1 .dot { color:var(--accent); }
 #card.on ~ #hint { opacity:0; }
 button:focus-visible, .chip:focus-visible, a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 
-@media (max-height:780px) and (min-width:721px) {
+@media (max-height:860px) and (min-width:721px) {
   h1 { font-size:clamp(32px, 3.6vw, 48px); margin-bottom:12px; }
   #head .ctx { display:none; }
-  #legend { max-height:40vh; }
+}
+@media (max-height:620px) and (min-width:721px) {
+  h1 { font-size:30px; margin-bottom:8px; }
+  #head .kicker { display:none; }
+  #links { margin-top:12px; }
 }
 @media (max-width:720px) {
   #home { top:14px; left:16px; }
-  #head { top:40px; left:16px; right:16px; transform:none; max-width:none; }
+  #side { top:40px; left:16px; right:16px; bottom:12px; width:auto; gap:10px; }
   h1 { font-size:32px; margin-bottom:8px; }
   #head .kicker, #head .ctx, #links .lic { display:none; }
   #head p { font-size:12.5px; }
   #links { margin-top:10px; }
   .btn { padding:6px 12px; font-size:12px; }
-  #legend { left:12px; right:12px; bottom:12px; width:auto; padding:10px; max-height:46vh; }
+  #legend { width:auto; padding:10px; }
   #legend.folded #chips { display:none; }
   #fold { display:inline; }
   #card { left:12px; right:12px; top:auto; bottom:12px; width:auto; max-height:52%; }
@@ -137,6 +145,7 @@ button:focus-visible, .chip:focus-visible, a:focus-visible { outline:2px solid v
 <div id="stage">
   <canvas id="cv" role="img" aria-label="Rotating 3-D map of the 223 ideas of Topic 2 and the prerequisite links between them. Use the search box to open any idea."></canvas>
   <a id="home" href="index.html">&larr; Empiricist Geophysics</a>
+  <div id="side">
   <div id="head">
     <h1>Inverse problems and Bayesian inversion<span class="dot">.</span></h1>
     <p class="kicker">A knowledge map of Topic 2 of Empiricist Geophysics.</p>
@@ -154,6 +163,7 @@ button:focus-visible, .chip:focus-visible, a:focus-visible { outline:2px solid v
     <div id="results" role="listbox" aria-label="Matching ideas"></div>
     <div class="lg-title"><span>Sections &middot; click to show or hide</span><button id="fold" aria-expanded="false">show</button></div>
     <div id="chips"></div>
+  </div>
   </div>
 
   <div id="tip" role="tooltip"><div class="meta"><span class="sw"></span><span class="where"></span></div>
@@ -233,7 +243,7 @@ function resize() {
   cv.width = Math.round(VW * DPR); cv.height = Math.round(VH * DPR);
   cv.style.width = VW + "px"; cv.style.height = VH + "px";
   if (narrow() && legend.classList.contains("folded")) foldedLegend = legend.offsetHeight;
-  band = [head.offsetTop + head.offsetHeight + 10, VH - 12 - foldedLegend - 10];
+  band = [head.getBoundingClientRect().bottom - stage.getBoundingClientRect().top + 10, VH - 12 - foldedLegend - 10];
   if (band[1] - band[0] < 220) band = [Math.max(0, band[1] - 220), band[1]];
   if (sel < 0) Object.assign(cam, home());
 }
@@ -250,7 +260,7 @@ const wrapAngle = a => Math.atan2(Math.sin(a), Math.cos(a));
 function viewBox() {                      // screen area left free by the card and the legend
   if (!card.classList.contains("on")) return {x: 0, y: 0, w: VW, h: VH};
   if (narrow()) return {x: 0, y: 0, w: VW, h: Math.max(160, VH - card.offsetHeight - 24)};
-  const left = legend.offsetLeft + legend.offsetWidth + 16, right = card.offsetLeft - 16;
+  const left = legend.getBoundingClientRect().right - stage.getBoundingClientRect().left + 16, right = card.offsetLeft - 16;
   return right - left > 360 ? {x: left, y: 16, w: right - left, h: VH - 32} : {x: 0, y: 0, w: Math.max(240, right), h: VH};
 }
 function aim(i) {                         // turn idea i to the front and fit its lineage into the free area
@@ -374,6 +384,8 @@ SEC.forEach((s, k) => {
   el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
   chips.appendChild(el);
 });
+const moreChips = () => chips.classList.toggle("more", chips.scrollTop + chips.clientHeight < chips.scrollHeight - 2);
+chips.addEventListener("scroll", moreChips);
 $("#fold").addEventListener("click", () => { const f = legend.classList.toggle("folded");
   $("#fold").textContent = f ? "show" : "hide"; $("#fold").setAttribute("aria-expanded", String(!f)); });
 
@@ -526,8 +538,9 @@ function tick(now) {
   draw();
   requestAnimationFrame(tick);
 }
-window.addEventListener("resize", () => { resize(); if (sel >= 0) aim(sel); });
+window.addEventListener("resize", () => { resize(); moreChips(); if (sel >= 0) aim(sel); });
 resize();
+moreChips();
 const start = byId.get(decodeURIComponent(location.hash.slice(1)));
 if (start !== undefined) { grow = GROWN; select(start, false); Object.assign(cam, goal); goal = null; }
 requestAnimationFrame(tick);

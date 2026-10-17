@@ -323,7 +323,8 @@ function project() {
 
 // ---- state
 const on = new Set(SEC.map((_, k) => k));
-let hover = -1, sel = -1, lin = null, rowHot = -1, grow = reduce ? 1 : 0;
+const GROWN = 1.03;                       // the growth front ends a little above the top, so the top dots fade in fully
+let hover = -1, sel = -1, lin = null, rowHot = -1, grow = reduce ? GROWN : 0;
 const trail = [];                         // ideas visited before the current one (for Back)
 const shown = i => on.has(N[i].s) && RISE[i] <= grow;
 const radius = i => (4 + Math.sqrt(N[i].c) * 9) * PF[i] * Math.min(1.3, Math.max(0.9, cam.zoom));
@@ -357,15 +358,25 @@ function aim(i) {                         // turn idea i to the front and fit it
   const phi = Math.atan2(WZ[i], WX[i]);
   const yaw = cam.yaw + wrapAngle(phi + Math.PI / 2 - cam.yaw), pitch = -0.2;
   const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
-  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  const X = [], Y = [], F = [];             // the lineage as project() will see it, perspective included
   lin.nodes.forEach(j => {
-    const x = WX[j] * cy + WZ[j] * sy, z = -WX[j] * sy + WZ[j] * cy, y = WY[j] * cp - z * sp;
-    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+    const x = WX[j] * cy + WZ[j] * sy, z = -WX[j] * sy + WZ[j] * cy;
+    X.push(x); Y.push(WY[j] * cp - z * sp); F.push(FOV / (FOV + (WY[j] * sp + z * cp) * 0.8));
   });
-  const b = viewBox(), s0 = scale0();
-  const fit = Math.min(b.w * 0.8 / ((x1 - x0) * s0 + 1), b.h * 0.78 / ((y1 - y0) * s0 + 1));
-  goal = {yaw, pitch, zoom: Math.max(1, Math.min(1.8, fit)), px: (x0 + x1) / 2, py: (y0 + y1) / 2,
-          ox: (b.x + b.w / 2) / VW, oy: (b.y + b.h / 2) / VH};
+  const fmean = F.reduce((a, f) => a + f, 0) / F.length;
+  const range = (V, c) => {
+    let lo = Infinity, hi = -Infinity;
+    V.forEach((v, k) => { const u = (v - c) * F[k]; lo = Math.min(lo, u); hi = Math.max(hi, u); });
+    return [lo, hi];
+  };
+  let px = 0, py = 0, rx = range(X, 0), ry = range(Y, 0);
+  for (let it = 0; it < 6; it++) {          // centre it on screen
+    px += (rx[0] + rx[1]) / 2 / fmean; py += (ry[0] + ry[1]) / 2 / fmean;
+    rx = range(X, px); ry = range(Y, py);
+  }
+  const b = viewBox(), s0 = scale0(), m = 26;
+  const fit = Math.min((b.w / 2 - m) / ((rx[1] - rx[0]) / 2 * s0 + 1e-6), (b.h / 2 - m) / ((ry[1] - ry[0]) / 2 * s0 + 1e-6));
+  goal = {yaw, pitch, zoom: Math.max(0.6, Math.min(1.8, fit)), px, py, ox: (b.x + b.w / 2) / VW, oy: (b.y + b.h / 2) / VH};
 }
 
 // ---- selection
@@ -481,7 +492,7 @@ function showHits() {
   });
   results.classList.toggle("on", hits.length > 0);
 }
-function choose(j) { find.value = ""; hits = []; showHits(); find.blur(); grow = 1; select(j, true); }
+function choose(j) { find.value = ""; hits = []; showHits(); find.blur(); grow = GROWN; select(j, true); }
 find.addEventListener("input", () => {
   const q = find.value.trim().toLowerCase();
   hits = q.length < 2 ? [] : N.map((d, j) => [d.t.toLowerCase().indexOf(q), j]).filter(a => a[0] >= 0)
@@ -548,7 +559,7 @@ stage.addEventListener("wheel", e => {
 document.addEventListener("keydown", e => { if (e.key === "Escape" && document.activeElement !== find && sel >= 0) clearSel(); });
 window.addEventListener("hashchange", () => {
   const j = byId.get(decodeURIComponent(location.hash.slice(1)));
-  if (j !== undefined && j !== sel) { grow = 1; select(j, true); }
+  if (j !== undefined && j !== sel) { grow = GROWN; select(j, true); }
 });
 
 // ---- drawing
@@ -601,7 +612,7 @@ const T0 = performance.now();
 let last = T0;
 function tick(now) {
   const dt = Math.min(64, now - last); last = now;
-  if (grow < 1) grow = Math.min(1, (now - T0) / 2800);
+  if (grow < GROWN) grow = Math.min(GROWN, (now - T0) / 2800 * GROWN);
   if (!dragging && hover < 0 && sel < 0 && spin) cam.yaw += spin * dt;
   if (goal) {
     const k = reduce ? 1 : 1 - Math.exp(-dt / 130);
@@ -619,7 +630,7 @@ function tick(now) {
 window.addEventListener("resize", () => { resize(); if (sel >= 0) aim(sel); });
 resize();
 const start = byId.get(decodeURIComponent(location.hash.slice(1)));
-if (start !== undefined) { grow = 1; select(start, false); Object.assign(cam, goal); goal = null; }
+if (start !== undefined) { grow = GROWN; select(start, false); Object.assign(cam, goal); goal = null; }
 requestAnimationFrame(tick);
 })();
 </script>

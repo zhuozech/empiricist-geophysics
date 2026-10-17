@@ -40,6 +40,7 @@ source/                  the hand-written source: one T(...) entry per topic, pr
 scripts/build.py         source -> data (adds the computed fields)
 scripts/validate.py      integrity checks (exit code 1 on any error)
 scripts/build_viewer.py  data -> 3-D layout -> html/knowledge-map.html and figures/knowledge-map.png
+scripts/record_animation.py  html/knowledge-map.html -> figures/knowledge-map.gif (and an MP4), recorded in headless Chrome
 ```
 
 ## Topic fields
@@ -79,6 +80,7 @@ prerequisite comes earlier in the reading order than the topic that needs it.
 python knowledge-map/scripts/build.py        # source -> data; warns if a topic's words are missing from its section
 python knowledge-map/scripts/validate.py     # must print "OK: all checks passed"
 python knowledge-map/scripts/build_viewer.py # interactive page and static figure
+python knowledge-map/scripts/record_animation.py  # optional: the animation in the course README (needs Chrome and ffmpeg)
 ```
 
 Run them after editing the notebooks or the source, so section links and computed fields stay current.

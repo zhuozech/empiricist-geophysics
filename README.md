@@ -10,6 +10,10 @@ known, every method is actually run, and every figure comes from that run. The n
 The notebooks were developed with Claude Opus 5.5 (Anthropic).
 The course will continue to evolve as my understanding of the subject grows and changes.
 
+[![The 3-D knowledge map of Topic 2: it grows from the first notebook to the last, then one idea is opened and every idea it builds on lights up](figures/knowledge-map.gif)](https://zhuozech.github.io/empiricist-geophysics/html/knowledge-map.html)
+
+*Knowledge map of Topic 2 ([open it](https://zhuozech.github.io/empiricist-geophysics/html/knowledge-map.html)): 223 ideas in 3-D, with height as reading order and colour as the section. Click any idea to light up everything it builds on.*
+
 The course has four topics. Topic 2 is complete, Topic 3 is under development, and Topics 1 and 4 are planned.
 
 | topic | what it covers | status |

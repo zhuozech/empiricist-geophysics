@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Empiricist Geophysics knowledge map: dependencies",
+  "type": "object",
+  "required": ["version", "edgeCount", "dependencies"],
+  "properties": {
+    "version": { "type": "string" },
+    "note": { "type": "string" },
+    "edgeCount": { "type": "integer", "minimum": 0 },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["topicId", "prerequisiteId", "strength"],
+        "properties": {
+          "topicId": { "type": "string", "pattern": "^eg_" },
+          "prerequisiteId": { "type": "string", "pattern": "^eg_" },
+          "strength": { "type": "string", "enum": ["hard", "soft"] },
+          "reason": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

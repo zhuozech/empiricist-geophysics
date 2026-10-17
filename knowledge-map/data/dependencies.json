@@ -1,0 +1,2293 @@
+{
+ "version": "v1",
+ "note": "`topicId` depends on `prerequisiteId` (the prerequisite). Directed edges of a DAG.",
+ "edgeCount": 381,
+ "dependencies": [
+  {
+   "topicId": "eg_measurement_noise",
+   "prerequisiteId": "eg_forward_model",
+   "strength": "soft",
+   "reason": "Noise is the part of the data the forward model cannot predict"
+  },
+  {
+   "topicId": "eg_inverse_problem",
+   "prerequisiteId": "eg_forward_model",
+   "strength": "hard",
+   "reason": "Inversion runs the forward model backwards"
+  },
+  {
+   "topicId": "eg_inverse_problem",
+   "prerequisiteId": "eg_measurement_noise",
+   "strength": "hard",
+   "reason": "Noise is what makes many models acceptable"
+  },
+  {
+   "topicId": "eg_prior",
+   "prerequisiteId": "eg_inverse_problem",
+   "strength": "soft",
+   "reason": "The prior is the second input of an inversion, beside the data"
+  },
+  {
+   "topicId": "eg_likelihood",
+   "prerequisiteId": "eg_forward_model",
+   "strength": "hard",
+   "reason": "The likelihood compares data with the forward model's prediction"
+  },
+  {
+   "topicId": "eg_likelihood",
+   "prerequisiteId": "eg_measurement_noise",
+   "strength": "hard",
+   "reason": "The noise distribution sets how fast the likelihood falls off"
+  },
+  {
+   "topicId": "eg_posterior",
+   "prerequisiteId": "eg_prior",
+   "strength": "hard",
+   "reason": "The posterior updates the prior"
+  },
+  {
+   "topicId": "eg_posterior",
+   "prerequisiteId": "eg_likelihood",
+   "strength": "hard",
+   "reason": "The likelihood carries the information from the data"
+  },
+  {
+   "topicId": "eg_posterior_crowd",
+   "prerequisiteId": "eg_posterior",
+   "strength": "hard",
+   "reason": "The crowd is a picture of the posterior"
+  },
+  {
+   "topicId": "eg_posterior_shape",
+   "prerequisiteId": "eg_posterior_crowd",
+   "strength": "hard",
+   "reason": "The shape is what the crowd outlines"
+  },
+  {
+   "topicId": "eg_true_vs_reference",
+   "prerequisiteId": "eg_posterior",
+   "strength": "hard",
+   "reason": "The reference posterior is a posterior"
+  },
+  {
+   "topicId": "eg_true_vs_reference",
+   "prerequisiteId": "eg_measurement_noise",
+   "strength": "hard",
+   "reason": "Noise is why the posterior is not centred on the true value"
+  },
+  {
+   "topicId": "eg_model_error_intro",
+   "prerequisiteId": "eg_forward_model",
+   "strength": "hard",
+   "reason": "Model error is an error of the forward model"
+  },
+  {
+   "topicId": "eg_model_error_intro",
+   "prerequisiteId": "eg_measurement_noise",
+   "strength": "hard",
+   "reason": "It is defined by contrast with noise"
+  },
+  {
+   "topicId": "eg_credible_region",
+   "prerequisiteId": "eg_posterior",
+   "strength": "hard",
+   "reason": "A credible region is a region of the posterior"
+  },
+  {
+   "topicId": "eg_coverage",
+   "prerequisiteId": "eg_credible_region",
+   "strength": "hard",
+   "reason": "Coverage is a property of credible regions"
+  },
+  {
+   "topicId": "eg_coverage",
+   "prerequisiteId": "eg_true_vs_reference",
+   "strength": "hard",
+   "reason": "Coverage is measured against the true value"
+  },
+  {
+   "topicId": "eg_why_samplers",
+   "prerequisiteId": "eg_posterior_crowd",
+   "strength": "hard",
+   "reason": "Samplers produce the crowd"
+  },
+  {
+   "topicId": "eg_bayes_multiply_curves",
+   "prerequisiteId": "eg_posterior",
+   "strength": "hard",
+   "reason": "The picture is of prior × likelihood"
+  },
+  {
+   "topicId": "eg_data_bands",
+   "prerequisiteId": "eg_likelihood",
+   "strength": "hard",
+   "reason": "A band is where the likelihood of one datum is high"
+  },
+  {
+   "topicId": "eg_data_bands",
+   "prerequisiteId": "eg_bayes_multiply_curves",
+   "strength": "soft",
+   "reason": "The 2-D picture generalises the 1-D one"
+  },
+  {
+   "topicId": "eg_gaussian_posterior_conditions",
+   "prerequisiteId": "eg_data_bands",
+   "strength": "hard",
+   "reason": "Straight bands come from a linear forward model"
+  },
+  {
+   "topicId": "eg_gaussian_posterior_conditions",
+   "prerequisiteId": "eg_posterior_shape",
+   "strength": "soft",
+   "reason": "A Gaussian is one of the posterior shapes"
+  },
+  {
+   "topicId": "eg_tradeoff",
+   "prerequisiteId": "eg_data_bands",
+   "strength": "hard",
+   "reason": "A trade-off is a long band that no other datum cuts"
+  },
+  {
+   "topicId": "eg_funnel",
+   "prerequisiteId": "eg_posterior_shape",
+   "strength": "hard",
+   "reason": "The funnel is one of the shapes"
+  },
+  {
+   "topicId": "eg_gaussian_flat_smooth",
+   "prerequisiteId": "eg_gaussian_posterior_conditions",
+   "strength": "soft",
+   "reason": "Uses 'Gaussian' in the posterior sense"
+  },
+  {
+   "topicId": "eg_posterior_zoo",
+   "prerequisiteId": "eg_posterior_shape",
+   "strength": "hard",
+   "reason": "The zoo is a catalogue of shapes"
+  },
+  {
+   "topicId": "eg_posterior_zoo",
+   "prerequisiteId": "eg_tradeoff",
+   "strength": "soft",
+   "reason": "The ridge is a trade-off"
+  },
+  {
+   "topicId": "eg_posterior_zoo",
+   "prerequisiteId": "eg_funnel",
+   "strength": "soft",
+   "reason": "The funnel is in the zoo"
+  },
+  {
+   "topicId": "eg_random_variable",
+   "prerequisiteId": "eg_measurement_noise",
+   "strength": "soft",
+   "reason": "Noise is the first random variable of the course"
+  },
+  {
+   "topicId": "eg_expectation",
+   "prerequisiteId": "eg_random_variable",
+   "strength": "hard",
+   "reason": "The mean is a property of a distribution"
+  },
+  {
+   "topicId": "eg_variance",
+   "prerequisiteId": "eg_expectation",
+   "strength": "hard",
+   "reason": "Variance is an expectation of squared deviations"
+  },
+  {
+   "topicId": "eg_quantiles",
+   "prerequisiteId": "eg_random_variable",
+   "strength": "hard",
+   "reason": "Quantiles are read from the cdf"
+  },
+  {
+   "topicId": "eg_gaussian",
+   "prerequisiteId": "eg_variance",
+   "strength": "hard",
+   "reason": "The Gaussian is set by its mean and σ"
+  },
+  {
+   "topicId": "eg_heavy_tails",
+   "prerequisiteId": "eg_gaussian",
+   "strength": "hard",
+   "reason": "Tails are judged against the Gaussian"
+  },
+  {
+   "topicId": "eg_chi_square",
+   "prerequisiteId": "eg_gaussian",
+   "strength": "hard",
+   "reason": "χ² assumes Gaussian residuals"
+  },
+  {
+   "topicId": "eg_covariance",
+   "prerequisiteId": "eg_variance",
+   "strength": "hard",
+   "reason": "Covariance generalises variance to two quantities"
+  },
+  {
+   "topicId": "eg_multivariate_gaussian",
+   "prerequisiteId": "eg_covariance",
+   "strength": "hard",
+   "reason": "The covariance sets the ellipse"
+  },
+  {
+   "topicId": "eg_multivariate_gaussian",
+   "prerequisiteId": "eg_gaussian",
+   "strength": "hard",
+   "reason": "It is the Gaussian in several dimensions"
+  },
+  {
+   "topicId": "eg_eigen",
+   "prerequisiteId": "eg_multivariate_gaussian",
+   "strength": "hard",
+   "reason": "Eigenvectors are the axes of the Gaussian ellipse"
+  },
+  {
+   "topicId": "eg_positive_definite",
+   "prerequisiteId": "eg_eigen",
+   "strength": "hard",
+   "reason": "Positive definiteness is read from the eigenvalues"
+  },
+  {
+   "topicId": "eg_positive_definite",
+   "prerequisiteId": "eg_covariance",
+   "strength": "hard",
+   "reason": "It is a property of covariance matrices"
+  },
+  {
+   "topicId": "eg_lognormal",
+   "prerequisiteId": "eg_gaussian",
+   "strength": "hard",
+   "reason": "Its logarithm is Gaussian"
+  },
+  {
+   "topicId": "eg_joint_marginal_conditional",
+   "prerequisiteId": "eg_random_variable",
+   "strength": "hard",
+   "reason": "These are distributions of random variables"
+  },
+  {
+   "topicId": "eg_independence",
+   "prerequisiteId": "eg_joint_marginal_conditional",
+   "strength": "hard",
+   "reason": "Independence is defined through joint and marginals"
+  },
+  {
+   "topicId": "eg_uncorrelated_not_independent",
+   "prerequisiteId": "eg_independence",
+   "strength": "hard",
+   "reason": "Contrasts independence with correlation"
+  },
+  {
+   "topicId": "eg_uncorrelated_not_independent",
+   "prerequisiteId": "eg_covariance",
+   "strength": "hard",
+   "reason": "Correlation is defined from the covariance"
+  },
+  {
+   "topicId": "eg_bayes_rule",
+   "prerequisiteId": "eg_joint_marginal_conditional",
+   "strength": "hard",
+   "reason": "Bayes' rule follows from conditioning"
+  },
+  {
+   "topicId": "eg_bayes_rule",
+   "prerequisiteId": "eg_posterior",
+   "strength": "soft",
+   "reason": "It formalises posterior ∝ prior × likelihood"
+  },
+  {
+   "topicId": "eg_gaussian_conditioning",
+   "prerequisiteId": "eg_multivariate_gaussian",
+   "strength": "hard",
+   "reason": "Conditions a multivariate Gaussian"
+  },
+  {
+   "topicId": "eg_gaussian_conditioning",
+   "prerequisiteId": "eg_bayes_rule",
+   "strength": "hard",
+   "reason": "Conditioning is Bayes' rule"
+  },
+  {
+   "topicId": "eg_kalman_gain",
+   "prerequisiteId": "eg_gaussian_conditioning",
+   "strength": "hard",
+   "reason": "The gain appears in Gaussian conditioning"
+  },
+  {
+   "topicId": "eg_lln",
+   "prerequisiteId": "eg_expectation",
+   "strength": "hard",
+   "reason": "The average converges to the expectation"
+  },
+  {
+   "topicId": "eg_mc_error",
+   "prerequisiteId": "eg_lln",
+   "strength": "hard",
+   "reason": "Monte Carlo error says how far the average still is from the expectation"
+  },
+  {
+   "topicId": "eg_mc_error",
+   "prerequisiteId": "eg_variance",
+   "strength": "hard",
+   "reason": "It scales with σ"
+  },
+  {
+   "topicId": "eg_ess",
+   "prerequisiteId": "eg_mc_error",
+   "strength": "hard",
+   "reason": "ESS is defined through the Monte Carlo error"
+  },
+  {
+   "topicId": "eg_clt",
+   "prerequisiteId": "eg_lln",
+   "strength": "hard",
+   "reason": "Both describe averages of many draws"
+  },
+  {
+   "topicId": "eg_clt",
+   "prerequisiteId": "eg_gaussian",
+   "strength": "hard",
+   "reason": "The limit is the Gaussian"
+  },
+  {
+   "topicId": "eg_averaging_fails",
+   "prerequisiteId": "eg_clt",
+   "strength": "hard",
+   "reason": "Shows where the theorem's condition fails"
+  },
+  {
+   "topicId": "eg_averaging_fails",
+   "prerequisiteId": "eg_heavy_tails",
+   "strength": "hard",
+   "reason": "The Cauchy is an extreme heavy-tailed case"
+  },
+  {
+   "topicId": "eg_coloured_noise",
+   "prerequisiteId": "eg_mc_error",
+   "strength": "hard",
+   "reason": "Compares with the independent-draw error"
+  },
+  {
+   "topicId": "eg_bvm",
+   "prerequisiteId": "eg_clt",
+   "strength": "hard",
+   "reason": "A central-limit result for posteriors"
+  },
+  {
+   "topicId": "eg_bvm",
+   "prerequisiteId": "eg_posterior",
+   "strength": "hard",
+   "reason": "It describes the posterior"
+  },
+  {
+   "topicId": "eg_matvec_forward",
+   "prerequisiteId": "eg_notation",
+   "strength": "hard",
+   "reason": "Needs the matrix notation"
+  },
+  {
+   "topicId": "eg_matvec_forward",
+   "prerequisiteId": "eg_forward_model",
+   "strength": "hard",
+   "reason": "It is a linear forward model"
+  },
+  {
+   "topicId": "eg_transpose",
+   "prerequisiteId": "eg_matvec_forward",
+   "strength": "hard",
+   "reason": "The transpose of the forward matrix"
+  },
+  {
+   "topicId": "eg_inverse_determinant",
+   "prerequisiteId": "eg_notation",
+   "strength": "hard",
+   "reason": "Matrix algebra"
+  },
+  {
+   "topicId": "eg_cholesky",
+   "prerequisiteId": "eg_positive_definite",
+   "strength": "hard",
+   "reason": "Cholesky exists only for positive-definite matrices"
+  },
+  {
+   "topicId": "eg_whitening",
+   "prerequisiteId": "eg_cholesky",
+   "strength": "hard",
+   "reason": "Whitening uses the Cholesky factor"
+  },
+  {
+   "topicId": "eg_whitening",
+   "prerequisiteId": "eg_chi_square",
+   "strength": "hard",
+   "reason": "Whitening generalises χ² to correlated errors"
+  },
+  {
+   "topicId": "eg_solve_not_invert",
+   "prerequisiteId": "eg_inverse_determinant",
+   "strength": "hard",
+   "reason": "Contrasts the inverse with solving"
+  },
+  {
+   "topicId": "eg_solve_not_invert",
+   "prerequisiteId": "eg_cholesky",
+   "strength": "soft",
+   "reason": "Cholesky is one of the stable solvers"
+  },
+  {
+   "topicId": "eg_svd",
+   "prerequisiteId": "eg_matvec_forward",
+   "strength": "hard",
+   "reason": "The SVD decomposes the forward matrix"
+  },
+  {
+   "topicId": "eg_svd",
+   "prerequisiteId": "eg_eigen",
+   "strength": "soft",
+   "reason": "Singular values play the role eigenvalues play for covariances"
+  },
+  {
+   "topicId": "eg_logdet",
+   "prerequisiteId": "eg_cholesky",
+   "strength": "hard",
+   "reason": "Computed from the Cholesky factor"
+  },
+  {
+   "topicId": "eg_logdet",
+   "prerequisiteId": "eg_inverse_determinant",
+   "strength": "hard",
+   "reason": "It is the logarithm of the determinant"
+  },
+  {
+   "topicId": "eg_least_squares",
+   "prerequisiteId": "eg_matvec_forward",
+   "strength": "hard",
+   "reason": "The misfit uses the linear forward model"
+  },
+  {
+   "topicId": "eg_least_squares",
+   "prerequisiteId": "eg_transpose",
+   "strength": "hard",
+   "reason": "The normal equations contain Gᵀ"
+  },
+  {
+   "topicId": "eg_ls_is_ml",
+   "prerequisiteId": "eg_least_squares",
+   "strength": "hard",
+   "reason": "Reinterprets least squares"
+  },
+  {
+   "topicId": "eg_ls_is_ml",
+   "prerequisiteId": "eg_likelihood",
+   "strength": "hard",
+   "reason": "Uses the Gaussian likelihood"
+  },
+  {
+   "topicId": "eg_ls_is_ml",
+   "prerequisiteId": "eg_gaussian",
+   "strength": "hard",
+   "reason": "Gaussian noise"
+  },
+  {
+   "topicId": "eg_weighted_ls",
+   "prerequisiteId": "eg_ls_is_ml",
+   "strength": "hard",
+   "reason": "Weighting follows from the likelihood"
+  },
+  {
+   "topicId": "eg_weighted_ls",
+   "prerequisiteId": "eg_covariance",
+   "strength": "hard",
+   "reason": "Weights come from the data covariance"
+  },
+  {
+   "topicId": "eg_gauss_markov",
+   "prerequisiteId": "eg_weighted_ls",
+   "strength": "hard",
+   "reason": "The theorem is about weighted least squares"
+  },
+  {
+   "topicId": "eg_chi2_fit",
+   "prerequisiteId": "eg_chi_square",
+   "strength": "hard",
+   "reason": "Applies the χ² check to a fit"
+  },
+  {
+   "topicId": "eg_chi2_fit",
+   "prerequisiteId": "eg_weighted_ls",
+   "strength": "hard",
+   "reason": "Uses weighted residuals"
+  },
+  {
+   "topicId": "eg_ill_posed",
+   "prerequisiteId": "eg_svd",
+   "strength": "hard",
+   "reason": "Ill-posedness is read from the singular values"
+  },
+  {
+   "topicId": "eg_ill_posed",
+   "prerequisiteId": "eg_least_squares",
+   "strength": "hard",
+   "reason": "It is where least squares fails"
+  },
+  {
+   "topicId": "eg_resolution",
+   "prerequisiteId": "eg_ill_posed",
+   "strength": "hard",
+   "reason": "Blurring is how ill-posedness shows in the estimate"
+  },
+  {
+   "topicId": "eg_precision_weighting",
+   "prerequisiteId": "eg_bayes_multiply_curves",
+   "strength": "hard",
+   "reason": "The worked case of multiplying two Gaussian curves"
+  },
+  {
+   "topicId": "eg_precision_weighting",
+   "prerequisiteId": "eg_variance",
+   "strength": "hard",
+   "reason": "Precision is one over the variance"
+  },
+  {
+   "topicId": "eg_linear_gaussian_inversion",
+   "prerequisiteId": "eg_precision_weighting",
+   "strength": "hard",
+   "reason": "The matrix version of precision weighting"
+  },
+  {
+   "topicId": "eg_linear_gaussian_inversion",
+   "prerequisiteId": "eg_weighted_ls",
+   "strength": "hard",
+   "reason": "Contains the weighted misfit"
+  },
+  {
+   "topicId": "eg_linear_gaussian_inversion",
+   "prerequisiteId": "eg_gaussian_posterior_conditions",
+   "strength": "hard",
+   "reason": "The conditions for an exact Gaussian"
+  },
+  {
+   "topicId": "eg_map",
+   "prerequisiteId": "eg_linear_gaussian_inversion",
+   "strength": "hard",
+   "reason": "The MAP is the peak of that posterior"
+  },
+  {
+   "topicId": "eg_two_forms",
+   "prerequisiteId": "eg_linear_gaussian_inversion",
+   "strength": "hard",
+   "reason": "Two ways of writing the same posterior"
+  },
+  {
+   "topicId": "eg_two_forms",
+   "prerequisiteId": "eg_kalman_gain",
+   "strength": "hard",
+   "reason": "The data-space form is the gain form"
+  },
+  {
+   "topicId": "eg_point_estimates",
+   "prerequisiteId": "eg_map",
+   "strength": "hard",
+   "reason": "Compares the MAP with other summaries"
+  },
+  {
+   "topicId": "eg_point_estimates",
+   "prerequisiteId": "eg_quantiles",
+   "strength": "hard",
+   "reason": "The median is a quantile"
+  },
+  {
+   "topicId": "eg_hessian",
+   "prerequisiteId": "eg_map",
+   "strength": "hard",
+   "reason": "Curvature is measured at the peak"
+  },
+  {
+   "topicId": "eg_laplace",
+   "prerequisiteId": "eg_hessian",
+   "strength": "hard",
+   "reason": "Its covariance is the inverse Hessian"
+  },
+  {
+   "topicId": "eg_information_per_parameter",
+   "prerequisiteId": "eg_linear_gaussian_inversion",
+   "strength": "hard",
+   "reason": "Compares its posterior with the prior"
+  },
+  {
+   "topicId": "eg_regulariser_is_prior",
+   "prerequisiteId": "eg_map",
+   "strength": "hard",
+   "reason": "A regularised fit is a MAP"
+  },
+  {
+   "topicId": "eg_l2",
+   "prerequisiteId": "eg_regulariser_is_prior",
+   "strength": "hard",
+   "reason": "One particular penalty"
+  },
+  {
+   "topicId": "eg_l1",
+   "prerequisiteId": "eg_regulariser_is_prior",
+   "strength": "hard",
+   "reason": "One particular penalty"
+  },
+  {
+   "topicId": "eg_l1",
+   "prerequisiteId": "eg_heavy_tails",
+   "strength": "soft",
+   "reason": "The Laplace prior is heavier-tailed than the Gaussian"
+  },
+  {
+   "topicId": "eg_smoothing",
+   "prerequisiteId": "eg_regulariser_is_prior",
+   "strength": "hard",
+   "reason": "Smoothing is a penalty, hence a prior"
+  },
+  {
+   "topicId": "eg_tv",
+   "prerequisiteId": "eg_smoothing",
+   "strength": "hard",
+   "reason": "A difference penalty"
+  },
+  {
+   "topicId": "eg_tv",
+   "prerequisiteId": "eg_l1",
+   "strength": "hard",
+   "reason": "Uses absolute values like L1"
+  },
+  {
+   "topicId": "eg_prior_draws",
+   "prerequisiteId": "eg_regulariser_is_prior",
+   "strength": "hard",
+   "reason": "Draws from the prior a regulariser implies"
+  },
+  {
+   "topicId": "eg_laplacian_matern_link",
+   "prerequisiteId": "eg_smoothing",
+   "strength": "hard",
+   "reason": "Starts from Laplacian smoothing"
+  },
+  {
+   "topicId": "eg_l1_posterior",
+   "prerequisiteId": "eg_l1",
+   "strength": "hard",
+   "reason": "About the L1 prior"
+  },
+  {
+   "topicId": "eg_l1_posterior",
+   "prerequisiteId": "eg_posterior_crowd",
+   "strength": "hard",
+   "reason": "Compares the MAP with samples"
+  },
+  {
+   "topicId": "eg_loss",
+   "prerequisiteId": "eg_map",
+   "strength": "hard",
+   "reason": "Minimising the loss gives the MAP"
+  },
+  {
+   "topicId": "eg_loss",
+   "prerequisiteId": "eg_regulariser_is_prior",
+   "strength": "hard",
+   "reason": "The penalty part of the loss is the prior"
+  },
+  {
+   "topicId": "eg_robust_loss",
+   "prerequisiteId": "eg_loss",
+   "strength": "hard",
+   "reason": "A choice of loss"
+  },
+  {
+   "topicId": "eg_robust_loss",
+   "prerequisiteId": "eg_heavy_tails",
+   "strength": "hard",
+   "reason": "Robust losses assume heavy-tailed noise"
+  },
+  {
+   "topicId": "eg_noise_units",
+   "prerequisiteId": "eg_loss",
+   "strength": "hard",
+   "reason": "Concerns how losses scale residuals"
+  },
+  {
+   "topicId": "eg_noise_units",
+   "prerequisiteId": "eg_chi_square",
+   "strength": "soft",
+   "reason": "χ² already measures residuals in σ units"
+  },
+  {
+   "topicId": "eg_jacobian",
+   "prerequisiteId": "eg_matvec_forward",
+   "strength": "hard",
+   "reason": "Generalises G to nonlinear models"
+  },
+  {
+   "topicId": "eg_optimisers",
+   "prerequisiteId": "eg_loss",
+   "strength": "hard",
+   "reason": "Optimisers minimise a loss"
+  },
+  {
+   "topicId": "eg_optimisers",
+   "prerequisiteId": "eg_jacobian",
+   "strength": "hard",
+   "reason": "Gauss-Newton uses the Jacobian"
+  },
+  {
+   "topicId": "eg_conditioning",
+   "prerequisiteId": "eg_optimisers",
+   "strength": "hard",
+   "reason": "Affects how optimisers move"
+  },
+  {
+   "topicId": "eg_conditioning",
+   "prerequisiteId": "eg_hessian",
+   "strength": "hard",
+   "reason": "The valley's shape is its curvature"
+  },
+  {
+   "topicId": "eg_multistart",
+   "prerequisiteId": "eg_optimisers",
+   "strength": "hard",
+   "reason": "About what optimisers return"
+  },
+  {
+   "topicId": "eg_minibatch",
+   "prerequisiteId": "eg_optimisers",
+   "strength": "hard",
+   "reason": "A variant of gradient descent"
+  },
+  {
+   "topicId": "eg_early_stopping",
+   "prerequisiteId": "eg_ill_posed",
+   "strength": "hard",
+   "reason": "Works on ill-posed problems"
+  },
+  {
+   "topicId": "eg_early_stopping",
+   "prerequisiteId": "eg_optimisers",
+   "strength": "hard",
+   "reason": "Stops an iterative solver"
+  },
+  {
+   "topicId": "eg_minimum_not_uncertainty",
+   "prerequisiteId": "eg_laplace",
+   "strength": "hard",
+   "reason": "The Laplace approximation is the cheapest uncertainty"
+  },
+  {
+   "topicId": "eg_minimum_not_uncertainty",
+   "prerequisiteId": "eg_multistart",
+   "strength": "soft",
+   "reason": "Several minima make one curvature meaningless"
+  },
+  {
+   "topicId": "eg_prior_families",
+   "prerequisiteId": "eg_gaussian",
+   "strength": "hard",
+   "reason": "The Gaussian is one family"
+  },
+  {
+   "topicId": "eg_prior_families",
+   "prerequisiteId": "eg_heavy_tails",
+   "strength": "hard",
+   "reason": "Tails distinguish the families"
+  },
+  {
+   "topicId": "eg_prior_families",
+   "prerequisiteId": "eg_lognormal",
+   "strength": "hard",
+   "reason": "The log-normal is one family"
+  },
+  {
+   "topicId": "eg_parameterisation",
+   "prerequisiteId": "eg_prior_families",
+   "strength": "hard",
+   "reason": "About the uniform family"
+  },
+  {
+   "topicId": "eg_logit",
+   "prerequisiteId": "eg_parameterisation",
+   "strength": "hard",
+   "reason": "Uses the change-of-variables rule"
+  },
+  {
+   "topicId": "eg_dirichlet",
+   "prerequisiteId": "eg_prior_families",
+   "strength": "hard",
+   "reason": "Another prior family"
+  },
+  {
+   "topicId": "eg_dirichlet",
+   "prerequisiteId": "eg_positive_definite",
+   "strength": "soft",
+   "reason": "Shares that sum to one have a singular covariance"
+  },
+  {
+   "topicId": "eg_prior_predictive",
+   "prerequisiteId": "eg_prior_families",
+   "strength": "hard",
+   "reason": "Checks a chosen prior"
+  },
+  {
+   "topicId": "eg_prior_predictive",
+   "prerequisiteId": "eg_forward_model",
+   "strength": "hard",
+   "reason": "Runs the forward model on prior draws"
+  },
+  {
+   "topicId": "eg_data_vs_prior",
+   "prerequisiteId": "eg_information_per_parameter",
+   "strength": "hard",
+   "reason": "Uses the posterior-to-prior comparison"
+  },
+  {
+   "topicId": "eg_data_vs_prior",
+   "prerequisiteId": "eg_prior_families",
+   "strength": "hard",
+   "reason": "Swaps prior families"
+  },
+  {
+   "topicId": "eg_improper",
+   "prerequisiteId": "eg_svd",
+   "strength": "hard",
+   "reason": "The null space decides whether the posterior is proper"
+  },
+  {
+   "topicId": "eg_improper",
+   "prerequisiteId": "eg_parameterisation",
+   "strength": "soft",
+   "reason": "Flat priors again"
+  },
+  {
+   "topicId": "eg_gp",
+   "prerequisiteId": "eg_multivariate_gaussian",
+   "strength": "hard",
+   "reason": "A Gaussian process is a large multivariate Gaussian"
+  },
+  {
+   "topicId": "eg_kernels",
+   "prerequisiteId": "eg_gp",
+   "strength": "hard",
+   "reason": "The kernel defines the Gaussian process"
+  },
+  {
+   "topicId": "eg_length_amplitude",
+   "prerequisiteId": "eg_kernels",
+   "strength": "hard",
+   "reason": "Parameters of the kernel"
+  },
+  {
+   "topicId": "eg_gp_regression",
+   "prerequisiteId": "eg_gp",
+   "strength": "hard",
+   "reason": "Conditions a Gaussian-process prior"
+  },
+  {
+   "topicId": "eg_gp_regression",
+   "prerequisiteId": "eg_gaussian_conditioning",
+   "strength": "hard",
+   "reason": "It is Gaussian conditioning"
+  },
+  {
+   "topicId": "eg_evidence",
+   "prerequisiteId": "eg_bayes_rule",
+   "strength": "hard",
+   "reason": "The evidence is the denominator of Bayes' rule"
+  },
+  {
+   "topicId": "eg_gp_hyperparameters",
+   "prerequisiteId": "eg_gp_regression",
+   "strength": "hard",
+   "reason": "Tunes a Gaussian-process regression"
+  },
+  {
+   "topicId": "eg_gp_hyperparameters",
+   "prerequisiteId": "eg_evidence",
+   "strength": "hard",
+   "reason": "Uses the marginal likelihood"
+  },
+  {
+   "topicId": "eg_gp_hyperparameters",
+   "prerequisiteId": "eg_logdet",
+   "strength": "hard",
+   "reason": "The complexity term is a log-determinant"
+  },
+  {
+   "topicId": "eg_smoothing_flat",
+   "prerequisiteId": "eg_smoothing",
+   "strength": "hard",
+   "reason": "About smoothing penalties"
+  },
+  {
+   "topicId": "eg_smoothing_flat",
+   "prerequisiteId": "eg_svd",
+   "strength": "hard",
+   "reason": "The flat directions are a null space"
+  },
+  {
+   "topicId": "eg_smoothing_flat",
+   "prerequisiteId": "eg_gp",
+   "strength": "soft",
+   "reason": "Compared with a Gaussian-process prior"
+  },
+  {
+   "topicId": "eg_2d_fields",
+   "prerequisiteId": "eg_gp",
+   "strength": "hard",
+   "reason": "A Gaussian process in two dimensions"
+  },
+  {
+   "topicId": "eg_2d_fields",
+   "prerequisiteId": "eg_length_amplitude",
+   "strength": "soft",
+   "reason": "Uses two length scales"
+  },
+  {
+   "topicId": "eg_cd_cp",
+   "prerequisiteId": "eg_model_error_intro",
+   "strength": "hard",
+   "reason": "Formalises model error"
+  },
+  {
+   "topicId": "eg_cd_cp",
+   "prerequisiteId": "eg_covariance",
+   "strength": "hard",
+   "reason": "Both are covariance matrices"
+  },
+  {
+   "topicId": "eg_build_cp",
+   "prerequisiteId": "eg_cd_cp",
+   "strength": "hard",
+   "reason": "Builds the second error term"
+  },
+  {
+   "topicId": "eg_build_cp",
+   "prerequisiteId": "eg_jacobian",
+   "strength": "hard",
+   "reason": "A sensitivity is a one-column Jacobian"
+  },
+  {
+   "topicId": "eg_cchi_assumptions",
+   "prerequisiteId": "eg_build_cp",
+   "strength": "hard",
+   "reason": "About the C_p recipe"
+  },
+  {
+   "topicId": "eg_cchi_assumptions",
+   "prerequisiteId": "eg_independence",
+   "strength": "hard",
+   "reason": "Adding covariances needs independence"
+  },
+  {
+   "topicId": "eg_ignoring_cp",
+   "prerequisiteId": "eg_cd_cp",
+   "strength": "hard",
+   "reason": "About omitting C_p"
+  },
+  {
+   "topicId": "eg_ignoring_cp",
+   "prerequisiteId": "eg_coverage",
+   "strength": "hard",
+   "reason": "The damage shows in coverage"
+  },
+  {
+   "topicId": "eg_unmimicable_error",
+   "prerequisiteId": "eg_ignoring_cp",
+   "strength": "hard",
+   "reason": "The contrasting case"
+  },
+  {
+   "topicId": "eg_unmimicable_error",
+   "prerequisiteId": "eg_chi2_fit",
+   "strength": "soft",
+   "reason": "Shows up in χ²"
+  },
+  {
+   "topicId": "eg_gnss_noise",
+   "prerequisiteId": "eg_coloured_noise",
+   "strength": "hard",
+   "reason": "GNSS noise is coloured noise"
+  },
+  {
+   "topicId": "eg_noise_estimation",
+   "prerequisiteId": "eg_gnss_noise",
+   "strength": "hard",
+   "reason": "Estimates GNSS noise"
+  },
+  {
+   "topicId": "eg_noise_estimation",
+   "prerequisiteId": "eg_likelihood",
+   "strength": "hard",
+   "reason": "Uses a likelihood for the noise model"
+  },
+  {
+   "topicId": "eg_insar_covariance",
+   "prerequisiteId": "eg_covariance",
+   "strength": "hard",
+   "reason": "A covariance as a function of distance"
+  },
+  {
+   "topicId": "eg_decimation",
+   "prerequisiteId": "eg_insar_covariance",
+   "strength": "hard",
+   "reason": "Decimates correlated InSAR data"
+  },
+  {
+   "topicId": "eg_decimation",
+   "prerequisiteId": "eg_weighted_ls",
+   "strength": "hard",
+   "reason": "Weight follows C_d"
+  },
+  {
+   "topicId": "eg_tsunami_noise",
+   "prerequisiteId": "eg_coloured_noise",
+   "strength": "hard",
+   "reason": "Temporally correlated noise"
+  },
+  {
+   "topicId": "eg_tsunami_noise",
+   "prerequisiteId": "eg_covariance",
+   "strength": "hard",
+   "reason": "Filters transform covariances"
+  },
+  {
+   "topicId": "eg_effective_n",
+   "prerequisiteId": "eg_ess",
+   "strength": "hard",
+   "reason": "The data-side counterpart of the effective sample size"
+  },
+  {
+   "topicId": "eg_effective_n",
+   "prerequisiteId": "eg_insar_covariance",
+   "strength": "soft",
+   "reason": "Applied to InSAR"
+  },
+  {
+   "topicId": "eg_effective_n",
+   "prerequisiteId": "eg_tsunami_noise",
+   "strength": "soft",
+   "reason": "Applied to tsunami records"
+  },
+  {
+   "topicId": "eg_sigma_k_vs_full",
+   "prerequisiteId": "eg_decimation",
+   "strength": "hard",
+   "reason": "Builds on the InSAR weighting example"
+  },
+  {
+   "topicId": "eg_sigma_k_vs_full",
+   "prerequisiteId": "eg_effective_n",
+   "strength": "hard",
+   "reason": "Correlation reduces the information"
+  },
+  {
+   "topicId": "eg_method_map",
+   "prerequisiteId": "eg_posterior_zoo",
+   "strength": "hard",
+   "reason": "Graded on the zoo of shapes"
+  },
+  {
+   "topicId": "eg_markov_chain",
+   "prerequisiteId": "eg_posterior_crowd",
+   "strength": "hard",
+   "reason": "A chain produces the crowd"
+  },
+  {
+   "topicId": "eg_metropolis",
+   "prerequisiteId": "eg_markov_chain",
+   "strength": "hard",
+   "reason": "Metropolis builds a Markov chain"
+  },
+  {
+   "topicId": "eg_detailed_balance",
+   "prerequisiteId": "eg_metropolis",
+   "strength": "hard",
+   "reason": "Explains why Metropolis works"
+  },
+  {
+   "topicId": "eg_step_size",
+   "prerequisiteId": "eg_metropolis",
+   "strength": "hard",
+   "reason": "Tunes the Metropolis proposal"
+  },
+  {
+   "topicId": "eg_autocorrelation",
+   "prerequisiteId": "eg_ess",
+   "strength": "hard",
+   "reason": "Applies the effective sample size to chains"
+  },
+  {
+   "topicId": "eg_autocorrelation",
+   "prerequisiteId": "eg_metropolis",
+   "strength": "hard",
+   "reason": "Chains are correlated"
+  },
+  {
+   "topicId": "eg_shaped_proposals",
+   "prerequisiteId": "eg_step_size",
+   "strength": "hard",
+   "reason": "About choosing the proposal"
+  },
+  {
+   "topicId": "eg_shaped_proposals",
+   "prerequisiteId": "eg_tradeoff",
+   "strength": "hard",
+   "reason": "The difficulty is a trade-off ridge"
+  },
+  {
+   "topicId": "eg_dimension",
+   "prerequisiteId": "eg_step_size",
+   "strength": "hard",
+   "reason": "Step size must shrink with dimension"
+  },
+  {
+   "topicId": "eg_dimension",
+   "prerequisiteId": "eg_why_samplers",
+   "strength": "soft",
+   "reason": "Dimension again"
+  },
+  {
+   "topicId": "eg_jax",
+   "prerequisiteId": "eg_jacobian",
+   "strength": "soft",
+   "reason": "JAX computes derivatives such as Jacobians"
+  },
+  {
+   "topicId": "eg_autodiff",
+   "prerequisiteId": "eg_jacobian",
+   "strength": "hard",
+   "reason": "Computes Jacobians and gradients"
+  },
+  {
+   "topicId": "eg_autodiff",
+   "prerequisiteId": "eg_jax",
+   "strength": "soft",
+   "reason": "Done in JAX"
+  },
+  {
+   "topicId": "eg_differentiable",
+   "prerequisiteId": "eg_autodiff",
+   "strength": "hard",
+   "reason": "Differentiability is what autodiff needs"
+  },
+  {
+   "topicId": "eg_smooth_logpost_needed",
+   "prerequisiteId": "eg_differentiable",
+   "strength": "hard",
+   "reason": "Consequence of non-differentiability"
+  },
+  {
+   "topicId": "eg_bounds_transforms",
+   "prerequisiteId": "eg_logit",
+   "strength": "hard",
+   "reason": "Uses the logit and log transforms"
+  },
+  {
+   "topicId": "eg_bounds_transforms",
+   "prerequisiteId": "eg_differentiable",
+   "strength": "hard",
+   "reason": "A wall is not differentiable"
+  },
+  {
+   "topicId": "eg_black_box",
+   "prerequisiteId": "eg_autodiff",
+   "strength": "hard",
+   "reason": "Contrasts with code autodiff can see"
+  },
+  {
+   "topicId": "eg_gradient_arrows",
+   "prerequisiteId": "eg_posterior_shape",
+   "strength": "hard",
+   "reason": "Arrows on a posterior landscape"
+  },
+  {
+   "topicId": "eg_gradient_arrows",
+   "prerequisiteId": "eg_autodiff",
+   "strength": "soft",
+   "reason": "Autodiff computes them"
+  },
+  {
+   "topicId": "eg_optimiser_vs_sampler",
+   "prerequisiteId": "eg_gradient_arrows",
+   "strength": "hard",
+   "reason": "Both use the gradient"
+  },
+  {
+   "topicId": "eg_optimiser_vs_sampler",
+   "prerequisiteId": "eg_optimisers",
+   "strength": "soft",
+   "reason": "Optimisers seen in 2.10"
+  },
+  {
+   "topicId": "eg_hmc",
+   "prerequisiteId": "eg_gradient_arrows",
+   "strength": "hard",
+   "reason": "HMC is driven by the gradient"
+  },
+  {
+   "topicId": "eg_hmc",
+   "prerequisiteId": "eg_metropolis",
+   "strength": "hard",
+   "reason": "It ends with a Metropolis test"
+  },
+  {
+   "topicId": "eg_leapfrog_divergence",
+   "prerequisiteId": "eg_hmc",
+   "strength": "hard",
+   "reason": "Part of HMC"
+  },
+  {
+   "topicId": "eg_nuts",
+   "prerequisiteId": "eg_hmc",
+   "strength": "hard",
+   "reason": "NUTS is HMC with an automatic path length"
+  },
+  {
+   "topicId": "eg_dual_averaging",
+   "prerequisiteId": "eg_nuts",
+   "strength": "hard",
+   "reason": "Tunes NUTS"
+  },
+  {
+   "topicId": "eg_noncentered",
+   "prerequisiteId": "eg_funnel",
+   "strength": "hard",
+   "reason": "Removes the funnel"
+  },
+  {
+   "topicId": "eg_noncentered",
+   "prerequisiteId": "eg_leapfrog_divergence",
+   "strength": "hard",
+   "reason": "Divergences flag the problem"
+  },
+  {
+   "topicId": "eg_mass_matrix",
+   "prerequisiteId": "eg_hmc",
+   "strength": "hard",
+   "reason": "Part of HMC"
+  },
+  {
+   "topicId": "eg_mass_matrix",
+   "prerequisiteId": "eg_whitening",
+   "strength": "soft",
+   "reason": "It whitens the posterior"
+  },
+  {
+   "topicId": "eg_mass_matrix",
+   "prerequisiteId": "eg_conditioning",
+   "strength": "soft",
+   "reason": "A preconditioner"
+  },
+  {
+   "topicId": "eg_warmup",
+   "prerequisiteId": "eg_markov_chain",
+   "strength": "hard",
+   "reason": "About how chains forget their start"
+  },
+  {
+   "topicId": "eg_rhat",
+   "prerequisiteId": "eg_warmup",
+   "strength": "hard",
+   "reason": "Computed after warm-up"
+  },
+  {
+   "topicId": "eg_rhat",
+   "prerequisiteId": "eg_variance",
+   "strength": "hard",
+   "reason": "Compares variances"
+  },
+  {
+   "topicId": "eg_trace_plots",
+   "prerequisiteId": "eg_warmup",
+   "strength": "hard",
+   "reason": "Reads chains over time"
+  },
+  {
+   "topicId": "eg_ranges_symptom",
+   "prerequisiteId": "eg_trace_plots",
+   "strength": "hard",
+   "reason": "Reads chains"
+  },
+  {
+   "topicId": "eg_ranges_symptom",
+   "prerequisiteId": "eg_rhat",
+   "strength": "hard",
+   "reason": "Compared with R-hat"
+  },
+  {
+   "topicId": "eg_rhat_not_correct",
+   "prerequisiteId": "eg_rhat",
+   "strength": "hard",
+   "reason": "A limit of R-hat"
+  },
+  {
+   "topicId": "eg_energy_diagnostic",
+   "prerequisiteId": "eg_rhat",
+   "strength": "soft",
+   "reason": "Another between-chain check"
+  },
+  {
+   "topicId": "eg_energy_diagnostic",
+   "prerequisiteId": "eg_hmc",
+   "strength": "soft",
+   "reason": "Potential energy from HMC"
+  },
+  {
+   "topicId": "eg_mcse",
+   "prerequisiteId": "eg_autocorrelation",
+   "strength": "hard",
+   "reason": "Uses the chain's effective sample size"
+  },
+  {
+   "topicId": "eg_mcse",
+   "prerequisiteId": "eg_mc_error",
+   "strength": "hard",
+   "reason": "The Monte Carlo error of chains"
+  },
+  {
+   "topicId": "eg_converged",
+   "prerequisiteId": "eg_rhat",
+   "strength": "hard",
+   "reason": "The sampling meaning is checked with R-hat"
+  },
+  {
+   "topicId": "eg_tempering",
+   "prerequisiteId": "eg_posterior",
+   "strength": "hard",
+   "reason": "Tempers the posterior"
+  },
+  {
+   "topicId": "eg_tempering",
+   "prerequisiteId": "eg_likelihood",
+   "strength": "hard",
+   "reason": "Raises the likelihood to a power"
+  },
+  {
+   "topicId": "eg_importance_weights",
+   "prerequisiteId": "eg_tempering",
+   "strength": "hard",
+   "reason": "Reweights between tempered distributions"
+  },
+  {
+   "topicId": "eg_importance_weights",
+   "prerequisiteId": "eg_expectation",
+   "strength": "soft",
+   "reason": "Weighted averages estimate expectations"
+  },
+  {
+   "topicId": "eg_smc",
+   "prerequisiteId": "eg_importance_weights",
+   "strength": "hard",
+   "reason": "Reweighting and resampling"
+  },
+  {
+   "topicId": "eg_smc",
+   "prerequisiteId": "eg_metropolis",
+   "strength": "hard",
+   "reason": "The move step"
+  },
+  {
+   "topicId": "eg_adaptive_schedule",
+   "prerequisiteId": "eg_importance_weights",
+   "strength": "hard",
+   "reason": "Controls the weights"
+  },
+  {
+   "topicId": "eg_adaptive_schedule",
+   "prerequisiteId": "eg_ess",
+   "strength": "hard",
+   "reason": "Uses the weights' ESS"
+  },
+  {
+   "topicId": "eg_degeneracy",
+   "prerequisiteId": "eg_adaptive_schedule",
+   "strength": "hard",
+   "reason": "What the schedule prevents"
+  },
+  {
+   "topicId": "eg_tempering_scope",
+   "prerequisiteId": "eg_smc",
+   "strength": "hard",
+   "reason": "Assesses SMC"
+  },
+  {
+   "topicId": "eg_tempering_scope",
+   "prerequisiteId": "eg_shaped_proposals",
+   "strength": "hard",
+   "reason": "Compared with shaped proposals"
+  },
+  {
+   "topicId": "eg_smc_evidence",
+   "prerequisiteId": "eg_smc",
+   "strength": "hard",
+   "reason": "A by-product of SMC"
+  },
+  {
+   "topicId": "eg_smc_evidence",
+   "prerequisiteId": "eg_evidence",
+   "strength": "hard",
+   "reason": "Estimates the evidence"
+  },
+  {
+   "topicId": "eg_elbo",
+   "prerequisiteId": "eg_evidence",
+   "strength": "hard",
+   "reason": "The ELBO bounds the log evidence"
+  },
+  {
+   "topicId": "eg_elbo",
+   "prerequisiteId": "eg_optimisers",
+   "strength": "hard",
+   "reason": "Fitted by optimisation"
+  },
+  {
+   "topicId": "eg_elbo",
+   "prerequisiteId": "eg_kl",
+   "strength": "soft",
+   "reason": "2.21 gives a short primer on KL; the full treatment is in 2.28"
+  },
+  {
+   "topicId": "eg_reparameterisation",
+   "prerequisiteId": "eg_elbo",
+   "strength": "hard",
+   "reason": "Computes the ELBO's gradient"
+  },
+  {
+   "topicId": "eg_reparameterisation",
+   "prerequisiteId": "eg_autodiff",
+   "strength": "hard",
+   "reason": "Differentiates the reparameterised draw"
+  },
+  {
+   "topicId": "eg_vi_families",
+   "prerequisiteId": "eg_elbo",
+   "strength": "hard",
+   "reason": "Families for variational inference"
+  },
+  {
+   "topicId": "eg_vi_families",
+   "prerequisiteId": "eg_multivariate_gaussian",
+   "strength": "hard",
+   "reason": "Full-rank is a multivariate Gaussian"
+  },
+  {
+   "topicId": "eg_mode_seeking",
+   "prerequisiteId": "eg_vi_families",
+   "strength": "hard",
+   "reason": "Behaviour of the families"
+  },
+  {
+   "topicId": "eg_mode_seeking",
+   "prerequisiteId": "eg_kl_asymmetry",
+   "strength": "soft",
+   "reason": "Explained fully by the asymmetry of KL in 2.28"
+  },
+  {
+   "topicId": "eg_vi_nonidentifiable",
+   "prerequisiteId": "eg_mode_seeking",
+   "strength": "hard",
+   "reason": "An extreme case"
+  },
+  {
+   "topicId": "eg_vi_nonidentifiable",
+   "prerequisiteId": "eg_leapfrog_divergence",
+   "strength": "hard",
+   "reason": "The NUTS warning sign"
+  },
+  {
+   "topicId": "eg_vi_nonidentifiable",
+   "prerequisiteId": "eg_tradeoff",
+   "strength": "hard",
+   "reason": "The ridge is a trade-off"
+  },
+  {
+   "topicId": "eg_adjoint",
+   "prerequisiteId": "eg_transpose",
+   "strength": "hard",
+   "reason": "The adjoint is a transpose"
+  },
+  {
+   "topicId": "eg_adjoint",
+   "prerequisiteId": "eg_autodiff",
+   "strength": "hard",
+   "reason": "The adjoint is reverse-mode differentiation"
+  },
+  {
+   "topicId": "eg_hand_adjoint",
+   "prerequisiteId": "eg_adjoint",
+   "strength": "hard",
+   "reason": "A worked adjoint"
+  },
+  {
+   "topicId": "eg_discretise",
+   "prerequisiteId": "eg_hand_adjoint",
+   "strength": "hard",
+   "reason": "Two ways to build the adjoint"
+  },
+  {
+   "topicId": "eg_gradient_cost",
+   "prerequisiteId": "eg_adjoint",
+   "strength": "hard",
+   "reason": "Compares the adjoint's cost"
+  },
+  {
+   "topicId": "eg_gradient_cost",
+   "prerequisiteId": "eg_autodiff",
+   "strength": "hard",
+   "reason": "Compares autodiff modes"
+  },
+  {
+   "topicId": "eg_gradient_pitfalls",
+   "prerequisiteId": "eg_differentiable",
+   "strength": "hard",
+   "reason": "Switches break differentiability"
+  },
+  {
+   "topicId": "eg_gradient_pitfalls",
+   "prerequisiteId": "eg_gradient_cost",
+   "strength": "soft",
+   "reason": "Same solvers"
+  },
+  {
+   "topicId": "eg_sequential_bayes",
+   "prerequisiteId": "eg_linear_gaussian_inversion",
+   "strength": "hard",
+   "reason": "Repeats the linear-Gaussian update"
+  },
+  {
+   "topicId": "eg_predict_update",
+   "prerequisiteId": "eg_sequential_bayes",
+   "strength": "hard",
+   "reason": "Adds a prediction step"
+  },
+  {
+   "topicId": "eg_predict_update",
+   "prerequisiteId": "eg_kalman_gain",
+   "strength": "hard",
+   "reason": "The update uses the gain"
+  },
+  {
+   "topicId": "eg_filter_smoother",
+   "prerequisiteId": "eg_predict_update",
+   "strength": "hard",
+   "reason": "Both run the filter"
+  },
+  {
+   "topicId": "eg_nif",
+   "prerequisiteId": "eg_predict_update",
+   "strength": "hard",
+   "reason": "A Kalman filter"
+  },
+  {
+   "topicId": "eg_nif",
+   "prerequisiteId": "eg_linear_gaussian_inversion",
+   "strength": "hard",
+   "reason": "Each update is a slip inversion"
+  },
+  {
+   "topicId": "eg_ensemble_cov",
+   "prerequisiteId": "eg_kalman_gain",
+   "strength": "hard",
+   "reason": "Computes the gain from the ensemble"
+  },
+  {
+   "topicId": "eg_ensemble_cov",
+   "prerequisiteId": "eg_covariance",
+   "strength": "hard",
+   "reason": "Sample covariances"
+  },
+  {
+   "topicId": "eg_statistical_linearisation",
+   "prerequisiteId": "eg_ensemble_cov",
+   "strength": "hard",
+   "reason": "Uses ensemble covariances"
+  },
+  {
+   "topicId": "eg_statistical_linearisation",
+   "prerequisiteId": "eg_jacobian",
+   "strength": "soft",
+   "reason": "Replaces the Jacobian"
+  },
+  {
+   "topicId": "eg_enkf",
+   "prerequisiteId": "eg_ensemble_cov",
+   "strength": "hard",
+   "reason": "An ensemble method"
+  },
+  {
+   "topicId": "eg_enkf",
+   "prerequisiteId": "eg_predict_update",
+   "strength": "hard",
+   "reason": "The filter's predict-update cycle"
+  },
+  {
+   "topicId": "eg_eki_collapse",
+   "prerequisiteId": "eg_ensemble_cov",
+   "strength": "hard",
+   "reason": "An ensemble update"
+  },
+  {
+   "topicId": "eg_eki_collapse",
+   "prerequisiteId": "eg_optimiser_vs_sampler",
+   "strength": "soft",
+   "reason": "Optimiser versus sampler"
+  },
+  {
+   "topicId": "eg_enki",
+   "prerequisiteId": "eg_eki_collapse",
+   "strength": "hard",
+   "reason": "Fixes the over-counting of EKI"
+  },
+  {
+   "topicId": "eg_enki",
+   "prerequisiteId": "eg_tempering",
+   "strength": "hard",
+   "reason": "Uses the tempering idea"
+  },
+  {
+   "topicId": "eg_enki_nonlinear",
+   "prerequisiteId": "eg_enki",
+   "strength": "hard",
+   "reason": "About EnKI"
+  },
+  {
+   "topicId": "eg_enki_nonlinear",
+   "prerequisiteId": "eg_statistical_linearisation",
+   "strength": "hard",
+   "reason": "Uses an average slope"
+  },
+  {
+   "topicId": "eg_dtheta_cap",
+   "prerequisiteId": "eg_enki",
+   "strength": "hard",
+   "reason": "Tunes EnKI"
+  },
+  {
+   "topicId": "eg_theta_monitor",
+   "prerequisiteId": "eg_enki",
+   "strength": "hard",
+   "reason": "Monitors EnKI"
+  },
+  {
+   "topicId": "eg_subspace",
+   "prerequisiteId": "eg_enki",
+   "strength": "hard",
+   "reason": "A property of EnKI"
+  },
+  {
+   "topicId": "eg_subspace",
+   "prerequisiteId": "eg_svd",
+   "strength": "soft",
+   "reason": "A span and its rank"
+  },
+  {
+   "topicId": "eg_nonlinearity_index",
+   "prerequisiteId": "eg_jacobian",
+   "strength": "hard",
+   "reason": "Compares with the tangent"
+  },
+  {
+   "topicId": "eg_nonlinearity_index",
+   "prerequisiteId": "eg_ensemble_cov",
+   "strength": "hard",
+   "reason": "The ensemble version"
+  },
+  {
+   "topicId": "eg_nonlinearity_index",
+   "prerequisiteId": "eg_noise_units",
+   "strength": "soft",
+   "reason": "Measured in noise units"
+  },
+  {
+   "topicId": "eg_ekf",
+   "prerequisiteId": "eg_kalman_gain",
+   "strength": "hard",
+   "reason": "A Kalman update"
+  },
+  {
+   "topicId": "eg_ekf",
+   "prerequisiteId": "eg_jacobian",
+   "strength": "hard",
+   "reason": "Linearises with the Jacobian"
+  },
+  {
+   "topicId": "eg_ekf",
+   "prerequisiteId": "eg_laplace",
+   "strength": "hard",
+   "reason": "Compared with the Laplace covariance"
+  },
+  {
+   "topicId": "eg_degradation",
+   "prerequisiteId": "eg_nonlinearity_index",
+   "strength": "hard",
+   "reason": "Plotted against the index"
+  },
+  {
+   "topicId": "eg_degradation",
+   "prerequisiteId": "eg_ekf",
+   "strength": "hard",
+   "reason": "The EKF's behaviour"
+  },
+  {
+   "topicId": "eg_degradation",
+   "prerequisiteId": "eg_enki",
+   "strength": "hard",
+   "reason": "EnKI's behaviour"
+  },
+  {
+   "topicId": "eg_degradation",
+   "prerequisiteId": "eg_nuts",
+   "strength": "soft",
+   "reason": "The samplers compared"
+  },
+  {
+   "topicId": "eg_linearisation_point",
+   "prerequisiteId": "eg_ekf",
+   "strength": "hard",
+   "reason": "About the EKF"
+  },
+  {
+   "topicId": "eg_linearisation_point",
+   "prerequisiteId": "eg_sequential_bayes",
+   "strength": "hard",
+   "reason": "Sequential use of the data"
+  },
+  {
+   "topicId": "eg_sampling_error",
+   "prerequisiteId": "eg_ensemble_cov",
+   "strength": "hard",
+   "reason": "Errors of ensemble covariances"
+  },
+  {
+   "topicId": "eg_sampling_error",
+   "prerequisiteId": "eg_positive_definite",
+   "strength": "soft",
+   "reason": "A rank-deficient covariance"
+  },
+  {
+   "topicId": "eg_localization",
+   "prerequisiteId": "eg_sampling_error",
+   "strength": "hard",
+   "reason": "The fix for sampling error"
+  },
+  {
+   "topicId": "eg_localization_length",
+   "prerequisiteId": "eg_localization",
+   "strength": "hard",
+   "reason": "Tunes the taper"
+  },
+  {
+   "topicId": "eg_inflation",
+   "prerequisiteId": "eg_ensemble_cov",
+   "strength": "hard",
+   "reason": "Rescales the ensemble spread"
+  },
+  {
+   "topicId": "eg_two_seed",
+   "prerequisiteId": "eg_subspace",
+   "strength": "hard",
+   "reason": "Seed dependence comes from the subspace property"
+  },
+  {
+   "topicId": "eg_two_seed",
+   "prerequisiteId": "eg_sampling_error",
+   "strength": "hard",
+   "reason": "Measures the sampling error"
+  },
+  {
+   "topicId": "eg_entropy",
+   "prerequisiteId": "eg_random_variable",
+   "strength": "hard",
+   "reason": "Entropy of a distribution"
+  },
+  {
+   "topicId": "eg_differential_entropy",
+   "prerequisiteId": "eg_entropy",
+   "strength": "hard",
+   "reason": "The continuous version"
+  },
+  {
+   "topicId": "eg_differential_entropy",
+   "prerequisiteId": "eg_gaussian",
+   "strength": "hard",
+   "reason": "Computed for the Gaussian"
+  },
+  {
+   "topicId": "eg_information_gain",
+   "prerequisiteId": "eg_differential_entropy",
+   "strength": "hard",
+   "reason": "A difference of entropies"
+  },
+  {
+   "topicId": "eg_information_gain",
+   "prerequisiteId": "eg_linear_gaussian_inversion",
+   "strength": "hard",
+   "reason": "Computed from the linear-Gaussian posterior"
+  },
+  {
+   "topicId": "eg_max_entropy",
+   "prerequisiteId": "eg_entropy",
+   "strength": "hard",
+   "reason": "Maximises entropy"
+  },
+  {
+   "topicId": "eg_max_entropy",
+   "prerequisiteId": "eg_prior_families",
+   "strength": "soft",
+   "reason": "Gives a reason for some prior families"
+  },
+  {
+   "topicId": "eg_kl",
+   "prerequisiteId": "eg_entropy",
+   "strength": "hard",
+   "reason": "Built from entropy and cross-entropy"
+  },
+  {
+   "topicId": "eg_kl",
+   "prerequisiteId": "eg_expectation",
+   "strength": "hard",
+   "reason": "An expectation of a log ratio"
+  },
+  {
+   "topicId": "eg_kl_asymmetry",
+   "prerequisiteId": "eg_kl",
+   "strength": "hard",
+   "reason": "A property of KL"
+  },
+  {
+   "topicId": "eg_kl_prior_posterior",
+   "prerequisiteId": "eg_kl",
+   "strength": "hard",
+   "reason": "Uses KL"
+  },
+  {
+   "topicId": "eg_kl_prior_posterior",
+   "prerequisiteId": "eg_information_gain",
+   "strength": "hard",
+   "reason": "Its average is the information gain"
+  },
+  {
+   "topicId": "eg_ml_min_kl",
+   "prerequisiteId": "eg_kl",
+   "strength": "hard",
+   "reason": "Reinterprets maximum likelihood with KL"
+  },
+  {
+   "topicId": "eg_ml_min_kl",
+   "prerequisiteId": "eg_ls_is_ml",
+   "strength": "hard",
+   "reason": "Maximum likelihood"
+  },
+  {
+   "topicId": "eg_non_gaussianity",
+   "prerequisiteId": "eg_kl",
+   "strength": "hard",
+   "reason": "Uses KL"
+  },
+  {
+   "topicId": "eg_non_gaussianity",
+   "prerequisiteId": "eg_gaussian_posterior_conditions",
+   "strength": "soft",
+   "reason": "When a posterior is Gaussian"
+  },
+  {
+   "topicId": "eg_hyperparameter",
+   "prerequisiteId": "eg_regulariser_is_prior",
+   "strength": "hard",
+   "reason": "λ sets the prior's strength"
+  },
+  {
+   "topicId": "eg_lcurve_gcv",
+   "prerequisiteId": "eg_hyperparameter",
+   "strength": "hard",
+   "reason": "Ways to choose λ"
+  },
+  {
+   "topicId": "eg_lcurve_gcv",
+   "prerequisiteId": "eg_resolution",
+   "strength": "soft",
+   "reason": "Uses the hat (resolution) matrix"
+  },
+  {
+   "topicId": "eg_abic",
+   "prerequisiteId": "eg_evidence",
+   "strength": "hard",
+   "reason": "ABIC is a marginal likelihood"
+  },
+  {
+   "topicId": "eg_abic",
+   "prerequisiteId": "eg_hyperparameter",
+   "strength": "hard",
+   "reason": "Chooses λ"
+  },
+  {
+   "topicId": "eg_abic",
+   "prerequisiteId": "eg_logdet",
+   "strength": "hard",
+   "reason": "Contains log-determinants"
+  },
+  {
+   "topicId": "eg_wrong_family",
+   "prerequisiteId": "eg_lcurve_gcv",
+   "strength": "hard",
+   "reason": "Compares the criteria"
+  },
+  {
+   "topicId": "eg_wrong_family",
+   "prerequisiteId": "eg_abic",
+   "strength": "hard",
+   "reason": "Compares the criteria"
+  },
+  {
+   "topicId": "eg_aic_bic",
+   "prerequisiteId": "eg_likelihood",
+   "strength": "hard",
+   "reason": "Both use the maximum likelihood"
+  },
+  {
+   "topicId": "eg_aic_bic",
+   "prerequisiteId": "eg_kl",
+   "strength": "hard",
+   "reason": "AIC estimates a KL divergence"
+  },
+  {
+   "topicId": "eg_aic_bic",
+   "prerequisiteId": "eg_evidence",
+   "strength": "soft",
+   "reason": "BIC approximates the evidence"
+  },
+  {
+   "topicId": "eg_evidence_width",
+   "prerequisiteId": "eg_evidence",
+   "strength": "hard",
+   "reason": "A property of the evidence"
+  },
+  {
+   "topicId": "eg_weighted_misfit_trap",
+   "prerequisiteId": "eg_chi2_fit",
+   "strength": "hard",
+   "reason": "About weighted misfits"
+  },
+  {
+   "topicId": "eg_weighted_misfit_trap",
+   "prerequisiteId": "eg_hyperparameter",
+   "strength": "hard",
+   "reason": "About weighting hyperparameters"
+  },
+  {
+   "topicId": "eg_reporting_fit",
+   "prerequisiteId": "eg_chi2_fit",
+   "strength": "hard",
+   "reason": "Per data set"
+  },
+  {
+   "topicId": "eg_hierarchical",
+   "prerequisiteId": "eg_hyperparameter",
+   "strength": "hard",
+   "reason": "Puts hyperparameters into the model"
+  },
+  {
+   "topicId": "eg_empirical_vs_full",
+   "prerequisiteId": "eg_hierarchical",
+   "strength": "hard",
+   "reason": "Two treatments of the hierarchy"
+  },
+  {
+   "topicId": "eg_empirical_vs_full",
+   "prerequisiteId": "eg_abic",
+   "strength": "hard",
+   "reason": "ABIC is empirical Bayes"
+  },
+  {
+   "topicId": "eg_positivity_abic",
+   "prerequisiteId": "eg_empirical_vs_full",
+   "strength": "hard",
+   "reason": "A failure of the plug-in formula"
+  },
+  {
+   "topicId": "eg_data_weights",
+   "prerequisiteId": "eg_hierarchical",
+   "strength": "hard",
+   "reason": "Noise scales as hyperparameters"
+  },
+  {
+   "topicId": "eg_data_weights",
+   "prerequisiteId": "eg_weighted_ls",
+   "strength": "hard",
+   "reason": "They set the weights"
+  },
+  {
+   "topicId": "eg_weights_measure_misfit",
+   "prerequisiteId": "eg_data_weights",
+   "strength": "hard",
+   "reason": "Interprets the weights"
+  },
+  {
+   "topicId": "eg_weights_measure_misfit",
+   "prerequisiteId": "eg_cd_cp",
+   "strength": "hard",
+   "reason": "Model error enters the weights"
+  },
+  {
+   "topicId": "eg_hyperprior",
+   "prerequisiteId": "eg_hierarchical",
+   "strength": "hard",
+   "reason": "The top of the hierarchy"
+  },
+  {
+   "topicId": "eg_hyperprior",
+   "prerequisiteId": "eg_improper",
+   "strength": "soft",
+   "reason": "Flat hyperpriors can be improper"
+  },
+  {
+   "topicId": "eg_objectivity",
+   "prerequisiteId": "eg_empirical_vs_full",
+   "strength": "hard",
+   "reason": "Weighs the approaches"
+  },
+  {
+   "topicId": "eg_objectivity",
+   "prerequisiteId": "eg_hyperprior",
+   "strength": "hard",
+   "reason": "Hyperpriors are choices"
+  },
+  {
+   "topicId": "eg_bur_br",
+   "prerequisiteId": "eg_prior_families",
+   "strength": "hard",
+   "reason": "Bounded priors"
+  },
+  {
+   "topicId": "eg_bur_br",
+   "prerequisiteId": "eg_smoothing",
+   "strength": "hard",
+   "reason": "Smoothing priors"
+  },
+  {
+   "topicId": "eg_bur_br",
+   "prerequisiteId": "eg_hierarchical",
+   "strength": "hard",
+   "reason": "The smoothing weight is estimated"
+  },
+  {
+   "topicId": "eg_profile_marginal",
+   "prerequisiteId": "eg_evidence",
+   "strength": "hard",
+   "reason": "The marginal is the evidence"
+  },
+  {
+   "topicId": "eg_profile_marginal",
+   "prerequisiteId": "eg_logdet",
+   "strength": "hard",
+   "reason": "The missing log-determinant"
+  },
+  {
+   "topicId": "eg_profile_marginal",
+   "prerequisiteId": "eg_abic",
+   "strength": "hard",
+   "reason": "Compares with ABIC"
+  },
+  {
+   "topicId": "eg_smoothing_overlap",
+   "prerequisiteId": "eg_bur_br",
+   "strength": "hard",
+   "reason": "Compares smoothed and unsmoothed inversions"
+  },
+  {
+   "topicId": "eg_smooth_after",
+   "prerequisiteId": "eg_bur_br",
+   "strength": "hard",
+   "reason": "Applies to unregularised inversion"
+  },
+  {
+   "topicId": "eg_smooth_after",
+   "prerequisiteId": "eg_posterior_crowd",
+   "strength": "hard",
+   "reason": "Works on samples"
+  },
+  {
+   "topicId": "eg_bur_model_error",
+   "prerequisiteId": "eg_bur_br",
+   "strength": "hard",
+   "reason": "About unregularised inversion"
+  },
+  {
+   "topicId": "eg_bur_model_error",
+   "prerequisiteId": "eg_cchi_assumptions",
+   "strength": "hard",
+   "reason": "Uses C_χ = C_d + C_p"
+  },
+  {
+   "topicId": "eg_evidence_fair",
+   "prerequisiteId": "eg_evidence_width",
+   "strength": "hard",
+   "reason": "The evidence depends on prior width"
+  },
+  {
+   "topicId": "eg_evidence_fair",
+   "prerequisiteId": "eg_bur_br",
+   "strength": "hard",
+   "reason": "Compares BUR and BR"
+  },
+  {
+   "topicId": "eg_derived",
+   "prerequisiteId": "eg_posterior_crowd",
+   "strength": "hard",
+   "reason": "Uses the samples"
+  },
+  {
+   "topicId": "eg_derived",
+   "prerequisiteId": "eg_expectation",
+   "strength": "hard",
+   "reason": "Jensen's inequality is about expectations"
+  },
+  {
+   "topicId": "eg_intervals",
+   "prerequisiteId": "eg_point_estimates",
+   "strength": "hard",
+   "reason": "Point summaries"
+  },
+  {
+   "topicId": "eg_intervals",
+   "prerequisiteId": "eg_credible_region",
+   "strength": "hard",
+   "reason": "Intervals are credible regions"
+  },
+  {
+   "topicId": "eg_marginal_joint",
+   "prerequisiteId": "eg_derived",
+   "strength": "hard",
+   "reason": "Derived from joint samples"
+  },
+  {
+   "topicId": "eg_marginal_joint",
+   "prerequisiteId": "eg_joint_marginal_conditional",
+   "strength": "hard",
+   "reason": "Marginal versus joint"
+  },
+  {
+   "topicId": "eg_ppc",
+   "prerequisiteId": "eg_derived",
+   "strength": "hard",
+   "reason": "Predictions are derived quantities"
+  },
+  {
+   "topicId": "eg_ppc",
+   "prerequisiteId": "eg_chi2_fit",
+   "strength": "hard",
+   "reason": "A χ² statistic is one test"
+  },
+  {
+   "topicId": "eg_sbc",
+   "prerequisiteId": "eg_coverage",
+   "strength": "hard",
+   "reason": "A coverage test over the prior"
+  },
+  {
+   "topicId": "eg_sbc",
+   "prerequisiteId": "eg_quantiles",
+   "strength": "hard",
+   "reason": "Ranks are quantiles"
+  },
+  {
+   "topicId": "eg_loo_waic",
+   "prerequisiteId": "eg_aic_bic",
+   "strength": "hard",
+   "reason": "Compared with AIC and BIC"
+  },
+  {
+   "topicId": "eg_loo_waic",
+   "prerequisiteId": "eg_importance_weights",
+   "strength": "soft",
+   "reason": "Importance-sampled LOO"
+  },
+  {
+   "topicId": "eg_reporting",
+   "prerequisiteId": "eg_mcse",
+   "strength": "hard",
+   "reason": "Report Monte Carlo errors"
+  },
+  {
+   "topicId": "eg_reporting",
+   "prerequisiteId": "eg_reporting_fit",
+   "strength": "hard",
+   "reason": "Report the fit per data set"
+  },
+  {
+   "topicId": "eg_reporting",
+   "prerequisiteId": "eg_derived",
+   "strength": "hard",
+   "reason": "Distinguish derived quantities"
+  },
+  {
+   "topicId": "eg_flat_prior_fails",
+   "prerequisiteId": "eg_improper",
+   "strength": "hard",
+   "reason": "An improper posterior"
+  },
+  {
+   "topicId": "eg_flat_prior_fails",
+   "prerequisiteId": "eg_ill_posed",
+   "strength": "hard",
+   "reason": "An ill-posed problem"
+  },
+  {
+   "topicId": "eg_positivity",
+   "prerequisiteId": "eg_bounds_transforms",
+   "strength": "hard",
+   "reason": "Enforced by a transform"
+  },
+  {
+   "topicId": "eg_positivity",
+   "prerequisiteId": "eg_point_estimates",
+   "strength": "soft",
+   "reason": "Skew separates the summaries"
+  },
+  {
+   "topicId": "eg_capstone",
+   "prerequisiteId": "eg_data_vs_prior",
+   "strength": "hard",
+   "reason": "Where the prior decides"
+  },
+  {
+   "topicId": "eg_capstone",
+   "prerequisiteId": "eg_hierarchical",
+   "strength": "hard",
+   "reason": "Hierarchical scales"
+  },
+  {
+   "topicId": "eg_capstone",
+   "prerequisiteId": "eg_enki",
+   "strength": "hard",
+   "reason": "EnKI on the same problem"
+  },
+  {
+   "topicId": "eg_capstone",
+   "prerequisiteId": "eg_nuts",
+   "strength": "hard",
+   "reason": "Sampled with NUTS"
+  },
+  {
+   "topicId": "eg_capstone",
+   "prerequisiteId": "eg_gp",
+   "strength": "hard",
+   "reason": "A Gaussian-process prior"
+  },
+  {
+   "topicId": "eg_capstone",
+   "prerequisiteId": "eg_flat_prior_fails",
+   "strength": "hard",
+   "reason": "Starts from the flat prior"
+  },
+  {
+   "topicId": "eg_capstone",
+   "prerequisiteId": "eg_positivity",
+   "strength": "hard",
+   "reason": "Adds positivity"
+  }
+ ]
+}

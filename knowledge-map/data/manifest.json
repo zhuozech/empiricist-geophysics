@@ -1,0 +1,43 @@
+{
+ "dataset": "Empiricist Geophysics knowledge map",
+ "taxonomyVersion": "v1",
+ "subject": "Inverse problems and Bayesian inversion",
+ "counts": {
+  "topics": 223,
+  "topicsByDomain": {
+   "A · Probability for inverse problems": 54,
+   "B · Linear inversion, ill-posedness, priors": 48,
+   "C · Errors and data weighting": 12,
+   "D · Computing a posterior: sampling": 47,
+   "E · Time-dependent and ensemble inversion": 22,
+   "F · Hyperparameters and weights": 30,
+   "G · Checking and synthesis": 10
+  },
+  "topicsByType": {
+   "CONCEPTUAL": 110,
+   "REPRESENTATIONAL": 10,
+   "META": 36,
+   "LANGUAGE": 3,
+   "PROCEDURAL": 64
+  },
+  "dependencies": 381,
+  "hard": 334,
+  "soft": 47,
+  "clusters": 7,
+  "notebooks": 33
+ },
+ "files": {
+  "topics.json": {
+   "bytes": 201285,
+   "sha256": "6e86615164e80f77eeb14a16e275272dfc8fb81bfa01387fd8b1b5c992f84ffb"
+  },
+  "dependencies.json": {
+   "bytes": 57221,
+   "sha256": "302faff692f4cad1e463424fec16f800567baf5e71461ba855c22451f172e007"
+  },
+  "clusters.json": {
+   "bytes": 2998,
+   "sha256": "f8c1ed3c7b2ff294012fa20a3aa9abfbc26722eb3e7a3ae8a25ae639c8c195df"
+  }
+ }
+}

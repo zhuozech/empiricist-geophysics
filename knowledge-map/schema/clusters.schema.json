@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Empiricist Geophysics knowledge map: clusters",
+  "type": "object",
+  "required": ["version", "clusterCount", "clusters"],
+  "properties": {
+    "version": { "type": "string" },
+    "clusterCount": { "type": "integer", "minimum": 0 },
+    "clusters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["subject", "domain", "firstNotebook", "lastNotebook", "topicCount", "summary"],
+        "properties": {
+          "subject": { "type": "string" },
+          "domain": { "type": "string" },
+          "firstNotebook": { "type": "string" },
+          "lastNotebook": { "type": "string" },
+          "topicCount": { "type": "integer", "minimum": 0 },
+          "summary": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

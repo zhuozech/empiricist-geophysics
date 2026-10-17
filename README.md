@@ -27,6 +27,7 @@ The course has four topics. Topic 2 is complete, Topic 3 is under development, a
 |---|---|
 | read without installing anything | open `html/index.html` in a browser (or start at `html/2-01_basics.html` and follow the "Next" links) |
 | play with samplers live | open `playground.html` in a browser: pick a posterior shape and a sampler, move the knobs |
+| see how the ideas connect | open `html/knowledge-map.html`: a rotating 3-D map of every idea in Topic 2; click a dot to trace everything it builds on, with a description and a self-check question |
 | run and change the code | install (below), then `jupyter lab notebooks/` |
 | see one figure | `figures/<id>_<name>.png` (300 dpi); animations are `.gif` |
 
@@ -62,6 +63,8 @@ in 2.33, stress-driven afterslip in 2.10 and Topic 3).
 
 Read in order; sections marked *optional* can be skipped on a first pass. Each notebook starts with what it
 assumes ("Before this") and what you will be able to do afterwards.
+
+**Knowledge map.** `html/knowledge-map.html` shows the 223 ideas of this topic as a rotating 3-D map, after the curriculum view of the [Marble skill taxonomy](https://github.com/withmarbleapp/os-taxonomy): height is reading order, colour is the section, and every thread is a prerequisite. Click an idea to see everything it builds on, a self-check question and a link to the notebook section that introduces it. The data are in `knowledge-map/` (JSON with schemas and a validator, in Marble's format); `figures/knowledge-map.png` is a still of the same view.
 
 | id | notebook | the question it answers | pictures to keep |
 |---|---|---|---|
@@ -263,6 +266,7 @@ playground.html      interactive sampler playground (no install)
 notebooks/           executed Jupyter notebooks, <topic>-<number>_<name>.ipynb
 html/                the same notebooks as stand-alone web pages; index.html is the course index
 figures/             every figure (PNG, 300 dpi) and animation (GIF); roadmap.png is the reading map
+knowledge-map/       the knowledge map of Topic 2: data (JSON), schemas, source and scripts
 bayeskit/            the shared toolkit: problems.py (test problems, grid reference, closed forms), samplers.py
                      (Metropolis, HMC, NUTS, SMC, ensemble Kalman, EKF), diagnostics.py (R-hat, ESS,
                      nonlinearity indices), afterslip.py (the Topic 3 forward model), plotting.py, style.py
